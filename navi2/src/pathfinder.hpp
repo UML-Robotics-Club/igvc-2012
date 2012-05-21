@@ -1,5 +1,7 @@
 #include <queue>
 #include <vector>
+#include <string>
+#include <sstream>
 #include "nav_msgs/OccupancyGrid.h"
 #include "nav_msgs/Path.h"
 #include "geometry_msgs/PoseStamped.h"
@@ -7,26 +9,28 @@
 #include "geometry_msgs/PoseArray.h"
 #include "tf/transform_listener.h"
 
+#define HOME_NODE (SearchNode*)3
+
 class SearchNode
 {
 public:
     
-    double m_x, m_y;
+    int m_x, m_y;
     double m_cost;
     SearchNode* m_parent;
     
     SearchNode();
-    SearchNode(double x, double y, double cost, SearchNode* parent);
+    SearchNode(int x, int y, double cost, SearchNode* parent);
 };
 
 class SearchNodeCmp
 {
 public:
-    static double m_xt, m_yt;
+    static int m_xt, m_yt;
     
     bool operator()(const SearchNode* a, const SearchNode* b);
     
-    static void SetTarget(double xt, double yt);
+    static void SetTarget(int xt, int yt);
 };
 
 class Pathfinder

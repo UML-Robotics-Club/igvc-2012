@@ -5,7 +5,7 @@ SearchNode::SearchNode()
     m_parent = NULL;
 }
 
-SearchNode::SearchNode(double x, double y, double cost, SearchNode* parent)
+SearchNode::SearchNode(int x, int y, double cost, SearchNode* parent)
 {
     m_x = x;
     m_y = y;
@@ -14,8 +14,8 @@ SearchNode::SearchNode(double x, double y, double cost, SearchNode* parent)
     m_parent = parent;
 }
 
-double SearchNodeCmp::m_xt;
-double SearchNodeCmp::m_yt;
+int SearchNodeCmp::m_xt;
+int SearchNodeCmp::m_yt;
 
 bool SearchNodeCmp::operator()(const SearchNode* a, const SearchNode* b)
 {
@@ -23,7 +23,7 @@ bool SearchNodeCmp::operator()(const SearchNode* a, const SearchNode* b)
            (hypot(b->m_x - m_xt, b->m_y - m_yt) + b->m_cost);
 }
 
-void SearchNodeCmp::SetTarget(double xt, double yt)
+void SearchNodeCmp::SetTarget(int xt, int yt)
 {
     m_xt = xt;
     m_yt = yt;
@@ -46,7 +46,7 @@ void Pathfinder::SetTarget(double xt, double yt)
 
 nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::OccupancyGrid>& maps)
 {
-    SearchNodeCmp::SetTarget(m_xt, m_yt);
+    SearchNodeCmp::SetTarget(m_xt / maps.front().info.resolution, m_yt / maps.front().info.resolution);
     std::priority_queue<SearchNode*, std::vector<SearchNode*>, SearchNodeCmp> queue;
     
     tf::StampedTransform transform;
@@ -67,8 +67,8 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
     {
         for (unsigned int x = 0; x < maps.front().info.width; ++x)
         {
-            m_searchmap[y * maps.front().info.width + x].m_x = x * maps.front().info.resolution;
-            m_searchmap[y * maps.front().info.width + x].m_y = y * maps.front().info.resolution;
+            m_searchmap[y * maps.front().info.width + x].m_x = x;
+            m_searchmap[y * maps.front().info.width + x].m_y = y;
         }
     }
     
@@ -78,18 +78,19 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
     /* Should get current vel */
     queue.push(&(m_searchmap[yy * maps.front().info.width + xx]));
     queue.top()->m_cost = 0;
+    queue.top()->m_parent = HOME_NODE;
     
     ROS_INFO("START (FL): %lf, %lf", transform.getOrigin().x(), transform.getOrigin().y());
     ROS_INFO("START (CO): %d, %d", xx, yy);
     ROS_INFO("START (AC): %d, %d", queue.top()->m_x, queue.top()->m_y);
     
-    ROS_INFO("NODE DETAILS: %lf %lf %lf", 
+    ROS_INFO("NODE DETAILS: %d %d %lf", 
              m_searchmap[yy * maps.front().info.width + xx].m_x,
              m_searchmap[yy * maps.front().info.width + xx].m_y,
              m_searchmap[yy * maps.front().info.width + xx].m_cost);
     
-    geometry_msgs::PoseArray pa;
-    pa.header.frame_id = "/map";
+    geometry_msgs::PoseArray markers;
+    markers.header.frame_id = "/map";
     
     while (!queue.empty() && queue.size() < 500000)
     {
@@ -99,14 +100,14 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
         
         
         {
-            geometry_msgs::Pose pose;
+            geometry_msgs::Pose marker;
             
-            pose.position.x = cur->m_x;
-            pose.position.y = cur->m_y;
+            marker.position.x = cur->m_x * maps.front().info.resolution;
+            marker.position.y = cur->m_y * maps.front().info.resolution;
             
             double yaw = 0;
             
-            if (cur->m_parent != NULL)
+            if (cur->m_parent > HOME_NODE)
             {
                 yaw = atan2(cur->m_parent->m_y - cur->m_y,
                             cur->m_parent->m_x - cur->m_x);
@@ -115,34 +116,36 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
             tf::Quaternion quat;
             quat.setRPY(0.0, 0.0, yaw);
             
-            pose.orientation.x = quat.getX();
-            pose.orientation.y = quat.getY();
-            pose.orientation.z = quat.getZ();
-            pose.orientation.w = quat.getW();
+            marker.orientation.x = quat.getX();
+            marker.orientation.y = quat.getY();
+            marker.orientation.z = quat.getZ();
+            marker.orientation.w = quat.getW();
             
-            pa.poses.push_back(pose);
+            markers.poses.push_back(marker);
         }
         
         //ROS_INFO("NODE(%d): %lf, %lf", queue.size(), cur->m_x, cur->m_y);
         
-        if (hypot(cur->m_x - m_xt, cur->m_y - m_yt) <= m_tolerance)
+        if (hypot(cur->m_x - m_xt / maps.front().info.resolution, 
+                  cur->m_y - m_yt / maps.front().info.resolution) <= m_tolerance)
         {
             ROS_INFO("DONE");
             
             m_lastPath = nav_msgs::Path();
             m_lastPath.header.frame_id = "/map";
             
-            while (cur != NULL)
+            while (cur != HOME_NODE)
             {
+                ROS_INFO("AS:%d %d-%d", m_lastPath.poses.size(), cur->m_x, cur->m_y);
                 geometry_msgs::PoseStamped pose;
                 
                 pose.header.frame_id = "/map";
-                pose.pose.position.x = cur->m_x;
-                pose.pose.position.y = cur->m_y;
+                pose.pose.position.x = cur->m_x * maps.front().info.resolution;
+                pose.pose.position.y = cur->m_y * maps.front().info.resolution;
                 
                 double yaw = 0;
                 
-                if (cur->m_parent != NULL)
+                if (cur->m_parent > HOME_NODE)
                 {
                     yaw = atan2(cur->m_parent->m_y - cur->m_y,
                                 cur->m_parent->m_x - cur->m_x);
@@ -161,7 +164,7 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
                 cur = cur->m_parent;
             }
             
-            m_poses.publish(pa);
+            m_poses.publish(markers);
             
             delete[] m_searchmap;
             
@@ -171,15 +174,15 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
         {
             //Expand Nodes
             
-            int mx = cur->m_x / maps.front().info.resolution;
-            int my = cur->m_y / maps.front().info.resolution;
+            int mx = cur->m_x;
+            int my = cur->m_y;
             int nx, ny;
             
             for (int xmod = -1; xmod <= 1; xmod++)
             {
                 for (int ymod = -1; ymod <= 1; ymod++)
                 {
-                    if (xmod != 0 && ymod != 0)
+                    if (xmod != 0 || ymod != 0)
                     {
                         nx = mx + xmod;
                         ny = my + ymod;
@@ -188,9 +191,13 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
                         {
                             nxt = &(m_searchmap[ny * maps.front().info.width + nx]);
                             
-                            if (nxt->m_parent == NULL || nxt->m_parent->m_cost > cur->m_cost)
+                            if (nxt->m_parent == NULL || (nxt->m_parent != HOME_NODE && nxt->m_parent->m_cost > cur->m_cost))
                             {
-                                if (cur->m_parent != NULL && LOS(maps, cur->m_parent, nxt))
+                                /*nxt->m_cost = cur->m_cost + hypot(nxt->m_x - cur->m_x, 
+                                                                  nxt->m_y - cur->m_y);
+                                nxt->m_parent = cur;*/
+                                
+                                if (cur->m_parent > HOME_NODE && LOS(maps, cur->m_parent, nxt))
                                 {
                                     nxt->m_cost = cur->m_parent->m_cost + hypot(nxt->m_x - cur->m_parent->m_x, 
                                                                                 nxt->m_y - cur->m_parent->m_y);
@@ -222,7 +229,7 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
         ROS_INFO("TERMINATED DUE TO FAIL");
     }
     
-    m_poses.publish(pa);
+    m_poses.publish(markers);
     
     delete[] m_searchmap;
     
