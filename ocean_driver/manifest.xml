@@ -1,0 +1,17 @@
+<package>
+  <description brief="os5000">
+
+     A simple driver for the OceanServer OS5000 Compass
+
+  </description>
+  <author>James Dalphond</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/os5000</url>
+  <depend package="rospy"/>
+  <depend package="geometry_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="tf"/>
+</package>
+
+
