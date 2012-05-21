@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+
+<robot
+    xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+    xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+    xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
+  
+  <!-- Properties (Constants) -->
+  <property name="camera_length" value="0.11"/>
+  <property name="camera_radius" value="0.0174625"/>
+  <property name="M_PI" value="3.14159"/>
+  <property name="camera_tilt" value="0.17"/>
+
+  <macro name="mcp_right_camera" params="parent reflect suffix">
+    <joint name="${parent}_${suffix}_camera_joint" type="fixed">
+      <parent link="${parent}" />
+      <child link="${parent}_${suffix}_camera"/>
+	<origin xyz="${camera_length/2} ${reflect * mast_base/2 +  reflect * camera_radius} ${mast_height/2 - 0.254}" rpy="0 ${M_PI / 2 + camera_tilt} 0" />
+    </joint>
+		
+    <link name="${parent}_${suffix}_camera">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder length="${camera_length}" radius="${camera_radius}"/>
+        </geometry>
+      </visual>
+      <inertial>
+        <mass value="0.01" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.001"  ixy="0.0"  ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+      <collision>
+        <geometry>
+          <cylinder length="${camera_length}" radius="${camera_radius}"/>
+        </geometry>
+      </collision>
+    </link>
+    
+    <link name="${parent}_${suffix}_camera_frame">
+      <inertial>
+        <mass value="0.01" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.001"  ixy="0.0"  ixz="0.0" iyy="0.001"  iyz="0.0" izz="0.001" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.001 0.001 0.001" />
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.001 0.001 0.001" />
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="${parent}_${suffix}_camera_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 ${-M_PI/2} 0" />
+      <parent link="${parent}_${suffix}_camera" />
+      <child link="${parent}_${suffix}_camera_frame"/>
+    </joint>	
+    
+    <gazebo reference="${parent}_${suffix}_camera_frame" >
+      <sensor:camera name="{suffix}_camera_sensor">
+        <imageSize>640 480</imageSize>
+        <imageFormat>R8G8B8</imageFormat>
+        <hfov>75</hfov>
+        <nearClip>0.01</nearClip>
+        <farClip>100</farClip>
+        <updateRate>10.0</updateRate>
+        <controller:gazebo_ros_camera name="camera_controller" plugin="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>10.0</updateRate>
+          <imageTopicName>/robot/${suffix}/image_raw</imageTopicName>
+          <cameraInfoTopicName>/robot/${suffix}/camera_info</cameraInfoTopicName>
+          <frameName>optical_frame</frameName>
+          <hackBaseline>${mast_base + camera_radius * 2}</hackBaseline>
+          <turnGravityOff value="true" />
+          <interface:camera name="${suffix}_camera_iface" />
+        </controller:gazebo_ros_camera>
+      </sensor:camera>
+    </gazebo>
+    
+    <gazebo reference="${parent}_${suffix}_camera">
+      <material>Gazebo/Blue</material>
+      <turnGravityOff value="true" />
+    </gazebo>
+    
+  </macro>
+</robot>

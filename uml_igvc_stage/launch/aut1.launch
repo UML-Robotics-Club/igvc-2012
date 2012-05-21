@@ -1,0 +1,8 @@
+<!-- -*- xml -*- -->
+<launch>
+    <param name="/use_sim_time" value="true"/>
+    <node name="stage" pkg="stage" type="stageros" required="true" ns="robot"
+          args="$(find uml_igvc_stage)/share/aut1.world" />
+    <node name="sim_gps" pkg="uml_sim_gps" type="sim_gps.py" args="-s" 
+          respawn="true" />
+</launch>

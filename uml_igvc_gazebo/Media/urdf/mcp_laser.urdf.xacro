@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+
+<robot
+    xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+    xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+    xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
+  
+  <!-- Properties (Constants) -->
+  <property name="laser_base_mass" value="4.5359237"/> <!-- assuming 10lbs -->
+  
+  <property name="laser_base" value="0.1524"/>
+  <property name="laser_height" value="0.18415"/>
+  
+  <property name="laser_base_y" value="0.5"/>
+  <property name="laser_base_x" value="0.1778"/>
+  <property name="laser_base_z" value="0.0381"/>
+  
+  <macro name="mcp_laser" params="parent">
+    <joint name="laser_base_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="laser_base"/>
+      <origin xyz="0.4889 0 -0.18095"/>
+    </joint>
+    
+    <link name="laser_base">
+      <visual>
+        <origin xyz="0 0 0"/>
+        <geometry>
+          <box size="${laser_base_x} ${laser_base_y} ${laser_base_z}"/>
+        </geometry>
+      </visual>
+      <inertial>
+        <mass value="${laser_base_mass}"/>
+        <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      </inertial>
+      <collision>
+        <geometry>
+          <box size="${laser_base_x} ${laser_base_y} ${laser_base_z}"/>
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="laser_joint" type="fixed">
+      <parent link="laser_base"/>
+      <child link="laser"/>
+      <origin xyz="0 0 ${laser_height/2 + laser_base_z/2}"/>
+    </joint>
+    
+    <link name="laser">
+      <visual>
+        <origin xyz="0 0 0"/>
+        <geometry>
+          <box size="${laser_base} ${laser_base} ${laser_height}"/>
+        </geometry>
+      </visual>
+      <inertial>
+        <mass value="1.0"/>
+        <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      </inertial>
+      <collision>
+        <geometry>
+          <box size="${laser_base} ${laser_base} ${laser_height}"/>
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="laser_frame_joint" type="fixed">
+      <origin xyz="${laser_base/2} 0 0" rpy="0 0 0" />
+      <parent link="laser" />
+      <child link="laser_frame"/>
+    </joint>
+    
+    <link name="laser_frame">
+      <inertial>
+        <mass value="0.01" />
+        <inertia ixx="0.001"  ixy="0.0"  ixz="0.0" iyy="0.001"  iyz="0.0" izz="0.001" />
+      </inertial>
+      <visual>
+        <geometry>
+          <box size="0.0001 0.0001 0.0001" />
+        </geometry>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="0.0001 0.0001 0.0001" />
+        </geometry>
+      </collision>
+    </link>
+    
+    <gazebo reference="laser_frame">
+      <sensor:ray name="laser">
+        <rayCount>180</rayCount>
+        <rangeCount>180</rangeCount>
+        <laserCount>1</laserCount>
+        
+        <displayRays>true</displayRays>
+        
+        <minAngle>-90</minAngle>
+        <maxAngle>90</maxAngle>
+        
+        <minRange>0.08</minRange>
+        <maxRange>16.0</maxRange>
+        <resRange>0.01</resRange>
+        <updateRate>10</updateRate>
+        
+        <controller:gazebo_ros_laser name="ros_ray_sensor_controller" plugin="libgazebo_ros_laser.so">
+          <gaussianNoise>0.005</gaussianNoise>
+          <alwaysOn>true</alwaysOn>
+          <updateRate>10</updateRate>
+          <topicName>/robot/base_scan</topicName>
+          <frameName>/laser_frame</frameName>
+          <interface:laser name="ros_ray_sensor_iface" />
+        </controller:gazebo_ros_laser>
+      </sensor:ray>
+    </gazebo>
+    
+    
+    <gazebo reference="laser">
+      <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="laser_base">
+      <material>Gazebo/BumpyMetal</material>
+    </gazebo>
+  </macro>
+</robot>

@@ -1,0 +1,17 @@
+<package>
+  <description brief="uml_sim_gps">
+    Publishes simulated GPS fixes based on location information published
+    by a running simulator like Stage or Gazebo.
+  </description>
+  <author>Nat Tuck</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/uml_sim_gps</url>
+  <depend package="rospy"/>
+  <depend package="nav_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="gazebo"/>
+  <depend package="tf"/>
+</package>
+
+

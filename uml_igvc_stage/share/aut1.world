@@ -1,0 +1,17 @@
+
+include "common.inc"
+
+floorplan
+( 
+  name "autcourse"
+  bitmap "aut1.png"
+  size [100.0 75.0 1.0]
+)
+
+window
+( 
+  size [ 1000 800 ] 
+  scale 10.0 
+)
+
+robot( pose [ -36.0 34.0 0 0 ] )

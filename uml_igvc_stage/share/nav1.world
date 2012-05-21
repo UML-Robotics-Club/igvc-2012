@@ -1,0 +1,17 @@
+
+include "common.inc"
+
+floorplan
+( 
+  name "navcourse"
+  bitmap "nav1.png"
+  size [55.0 65.0 1.0]
+)
+
+window
+( 
+  size [ 700 800 ] 
+  scale 10.0 
+)
+
+robot( pose [ -24.6 -7.6 0 0 ] )

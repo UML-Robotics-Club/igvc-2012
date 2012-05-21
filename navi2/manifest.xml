@@ -1,0 +1,19 @@
+<package>
+  <description brief="navi2">
+
+     navi2
+
+  </description>
+  <author>Michael McGuinness</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/navi2</url>
+  <depend package="nav_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="rospy"/>
+  <depend package="tf"/>
+
+</package>
+
+

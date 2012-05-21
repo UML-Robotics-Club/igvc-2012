@@ -1,0 +1,7 @@
+<!-- -*- xml -*- -->
+<launch>
+    <node name="stage" pkg="stage" type="stageros" required="true" ns="robot"
+          args="$(find uml_igvc_stage)/share/nav1.world" />
+    <node name="sim_gps" pkg="uml_sim_gps" type="sim_gps.py" args="-s" 
+          respawn="true" />
+</launch>

@@ -1,0 +1,45 @@
+<!-- -*- xml -*- -->
+<launch>
+  <param name="/use_sim_time" value="true" />
+  <node name="gazebo" pkg="gazebo" type="gazebo" output="screen" required="true"
+        args="$(find uml_igvc_gazebo)/Media/worlds/nav1.world" />
+  
+  <arg name="model" />
+  <param name="robot_description" 
+         command="$(find xacro)/xacro.py '$(find uml_igvc_gazebo)/Media/urdf/mcp.urdf.xacro'" />
+  
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_model" pkg="gazebo" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -z 0.05 -x -23.0 -y -14.6 -param robot_description -model robot" />
+  
+  <!-- publish a tf tree based on the urdf -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" 
+        type="joint_state_publisher" >
+  </node>
+
+  <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher" 
+        output="screen" >
+    <param name="publish_frequency" type="double" value="10.0" />
+    <param name="tf_prefix" type="string" value="" />
+  </node>
+
+  <node name="sim_gps" pkg="uml_sim_gps" type="sim_gps.py" args="-g" 
+        respawn="true" output="screen" />
+
+<!--
+  <node ns="robot" name="stereo_image_proc" pkg="stereo_image_proc" 
+        type="stereo_image_proc" output="screen" />
+-->
+
+<!--
+  <node name="compressL" pkg="image_transport" type="republish" output="screen"
+	args="raw in:=/robot/left/image_raw compressed out:=/robot/left/img" />
+  <node name="compressR" pkg="image_transport" type="republish" output="screen"
+	args="raw in:=/robot/right/image_raw compressed out:=/robot/right/img" />
+-->
+
+<!--
+  <node name="rectL" pkg="image_proc" type="image_proc" ns="/robot/left" />
+  <node name="rectR" pkg="image_proc" type="image_proc" ns="/robot/right" />
+-->
+</launch>

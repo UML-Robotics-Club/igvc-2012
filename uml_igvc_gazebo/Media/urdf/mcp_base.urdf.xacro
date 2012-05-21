@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
+  
+  <!-- Included URDF Files -->
+  <include filename="$(find uml_igvc_gazebo)/Media/urdf/materials.urdf.xacro"/>
+  <include filename="$(find uml_igvc_gazebo)/Media/urdf/mcp_wheel.urdf.xacro"/>
+  <include filename="$(find uml_igvc_gazebo)/Media/urdf/mcp_mast.urdf.xacro"/>
+  <include filename="$(find uml_igvc_gazebo)/Media/urdf/mcp_laser.urdf.xacro"/>
+  
+  <!-- Properties (Constants) -->
+  <property name="M_PI" value="3.14159"/>
+  
+  <property name="body_y" value="0.5"/>
+  <property name="body_x" value="0.8"/>
+  <property name="body_z" value="0.4"/>
+  
+  <property name="wheel_length" value="0.096"/>
+  
+  <property name="body_mass" value="200.0"/>  <!-- mass in kilograms, assumeing 300lb body -->
+  
+  <macro name="mcp">
+    <link name="base_footprint">
+      <inertial>
+        <mass value="0.0001" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+                 iyy="0.0001" iyz="0.0"
+                 izz="0.0001" />
+      </inertial>
+      
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="0.001 0.001 0.001" />
+        </geometry>
+        <material name="Green"/>
+      </visual>
+      
+      <collision>
+        <origin xyz="0 0 ${body_z/2 + 0.051}" rpy="0 0 0" />
+        <geometry>
+          <box size="0.001 0.001 0.001" />
+        </geometry>
+      </collision>
+    </link> 
+    <joint name="base_footprint_joint" type="fixed">
+      <origin xyz="0 0 ${body_z/2 + 0.051}" rpy="0 0 0" />
+      <parent link="base_footprint"/>
+      <child link="base_link" />
+    </joint>
+    
+    <!-- Links and Joints (i.e., the robot) -->
+    <link name="base_link">
+      <visual>
+        <geometry>
+          <box size="${body_x} ${body_y} ${body_z}"/>
+        </geometry>
+      </visual>
+      <inertial>
+        <mass value="${body_mass}"/>
+        <inertia ixx="1.0" ixy="0.0" ixz="0.0" 
+                 iyy="1.0" iyz="0.0" 
+                 izz="1.0"/>
+      </inertial>
+      <collision>
+        <geometry>
+          <box size="${body_x} ${body_y} ${body_z}"/>
+        </geometry>
+      </collision>
+    </link>
+    <!-- MACRO INSTANTIATION -->
+    
+    <mcp_wheel suffix="right_rear" parent="base_link" shift_y="-0.295" shift_x="-0.2"/>
+    <mcp_wheel suffix="left_front" parent="base_link" shift_y="0.295" shift_x="0.2"/>
+    <mcp_wheel suffix="right_front" parent="base_link" shift_y="-0.295" shift_x="0.2"/>
+    <mcp_wheel suffix="left_rear" parent="base_link" shift_y="0.295" shift_x="-0.2"/>
+    <mcp_mast parent="base_link"/>
+    <mcp_laser parent="base_link"/>
+    
+    <!-- CONTROLLERS -->  
+    <gazebo>
+      <controller:diffdrive_quad name="differential_drive_controller" plugin="libdiffdrive_quad.so">
+        <alwaysOn>true</alwaysOn>
+        <update>100</update>
+        <updateRate>10</updateRate>
+        <leftJoint>base_link_right_front_wheel_joint</leftJoint>
+        <rightJoint>base_link_left_front_wheel_joint</rightJoint>
+        <leftRearJoint>base_link_right_rear_wheel_joint</leftRearJoint>
+        <rightRearJoint>base_link_left_rear_wheel_joint</rightRearJoint>
+        <wheelSeparation>${body_x}</wheelSeparation>
+        <wheelDiameter>${wheel_radius*2}</wheelDiameter>
+        <torque>1000</torque>
+        <interface:position name="position_iface_0"/>
+        <robotNamespace>robot</robotNamespace>
+        <topicName>cmd_vel</topicName>
+      </controller:diffdrive_quad>
+    </gazebo>
+
+    <!-- GAZEBO MATERIALS -->    
+    <gazebo reference="base_link">
+      <material>Gazebo/BumpyMetal</material>
+    </gazebo>
+    
+  </macro>
+</robot>

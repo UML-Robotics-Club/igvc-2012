@@ -1,0 +1,21 @@
+
+<package>
+  <description brief="uml_igvc_gazebo">
+    Simulation of the IGVC challenges in Gazebo.
+  </description>
+  <author>Nat Tuck, Michael McGuinness</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/uml_igvc_gazebo</url>
+  <depend package="rospy"/>
+  <depend package="gazebo"/>
+  <depend package="gazebo_tools"/>
+  <depend package="gazebo_plugins"/>
+  <depend package="xacro"/>
+  <depend package="std_msgs"/>
+  <depend package="nav_msgs"/>
+
+  <export>
+    <gazebo gazebo_media_path="${prefix}" plugin_path="${prefix}/lib" />
+  </export>
+</package>

@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+
+<robot
+    xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+    xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+    xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
+  
+  <!-- Included URDF Files -->
+  <include filename="$(find uml_igvc_gazebo)/Media/urdf/mcp_left_camera.urdf.xacro"/>
+  <include filename="$(find uml_igvc_gazebo)/Media/urdf/mcp_right_camera.urdf.xacro"/>
+  
+  <!-- Properties (Constants) -->
+  <property name="mast_base" value="0.0381"/>
+  <property name="mast_height" value="1.25"/>
+  
+  <property name="mast_mass" value="4.5359237"/> <!--90.72 assuming 10lbs -->
+  
+  <macro name="mcp_mast" params="parent">
+    <joint name="mast_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="mast"/>
+      <origin xyz="-0.13335 0 ${mast_height/2 + body_z/2}"/>
+    </joint>
+    
+    <link name="mast">
+      <visual>
+        <origin xyz="0 0 0"/>
+        <geometry>
+          <box size="${mast_base} ${mast_base} ${mast_height}"/>
+        </geometry>
+      </visual>
+      <inertial>
+        <mass value="${mast_mass}"/>
+        <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      </inertial>
+      <collision>
+        <geometry>
+          <box size="${mast_base} ${mast_base} ${mast_height}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="optical_frame_joint" type="fixed">
+      <origin xyz="${camera_length/2} 0 ${mast_height/2 - 0.254}" rpy="${-M_PI/2 - camera_tilt} 0.0 ${-M_PI/2}" /> <!-- rotate frame from x-forward to z-forward camera coords -->
+      <parent link="mast"/>
+      <child link="optical_frame"/>
+    </joint>
+
+    <!-- optical frame for the stereo camera, with z-forward notation, this is the frame stereo camera images users should refer to -->
+    <link name="optical_frame" type="camera"/>
+        
+    <!-- MACRO INSTANTIATION -->
+    <mcp_left_camera parent="mast" reflect="1" suffix="left" />
+    <mcp_right_camera parent="mast" reflect="-1" suffix="right" />
+
+    <gazebo reference="mast">
+      <material>Gazebo/BumpyMetal</material>
+    </gazebo>
+  </macro>
+</robot>
+
+	

@@ -1,0 +1,14 @@
+<package>
+  <description brief="uml_igvc_stage">
+    Provides worlds and launch files to simulate the
+    International Ground Vehicle Competition challenges
+    in Stage.
+  </description>
+  <author>Nat Tuck</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/uml_igvc_stage</url>
+  <depend package="rospy"/>
+  <depend package="stage"/>
+  <depend package="uml_sim_gps"/>
+</package>
