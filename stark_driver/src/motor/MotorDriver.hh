@@ -24,6 +24,8 @@ class MotorDriver {
         if (motor) 
             motor->set_aux(enable);
     }
+    int GetLeftTicks(){return motor->get_left_ticks();}
+    int GetRightTicks(){return motor->get_right_ticks();}
 
   private:    
     void ReadCompass();

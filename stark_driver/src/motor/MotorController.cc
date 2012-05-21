@@ -82,6 +82,7 @@ MotorController::MotorController(std::string dev)
 
 MotorController::~MotorController()
 {
+    boost::mutex::scoped_lock lock_(lock);
     flasher_thread.interrupt();
     close(fd);
 }
@@ -122,6 +123,7 @@ MotorController::get_ticks(char wheel)
 {
   boost::mutex::scoped_lock lock_(lock);
   char resp;
+
   int val = 0;
   bool is_neg = false;
   int nibbles_read = 0;
@@ -134,9 +136,13 @@ MotorController::get_ticks(char wheel)
   send_char('\n');
   
   // get the echo
-  check_syscall("read", read(fd, &resp, 1)); // '\r'
-  check_syscall("read", read(fd, &resp, 1)); // '?'
-  check_syscall("read", read(fd, &resp, 1)); // 'q'
+  // Ok, so sometimes it prepends the echo with a '\r' and
+  // sometimes it doesn't.
+  
+  check_syscall("read", read(fd, &resp, 1)); // '?' or '\r'
+  if(resp == '\r')
+    check_syscall("read", read(fd, &resp, 1)); // '?'
+  check_syscall("read", read(fd, &resp, 1)); // 'q''
   check_syscall("read", read(fd, &resp, 1)); // wheel
   check_syscall("read", read(fd, &resp, 1)); // '\r'
 
@@ -159,7 +165,6 @@ MotorController::get_ticks(char wheel)
       break;
     ss << resp;
   }
-
   ss >> val;
   if(is_neg) // set the rest of the bits high
     val = val | (-1 << (4*(nibbles_read)));

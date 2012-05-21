@@ -12,7 +12,7 @@ void test(std::string dev) {
     left_count = mc.get_left_ticks();
     right_count = mc.get_right_ticks();
     printf("Left: %d Right: %d\n", left_count, right_count);
-    fsleep(0.1);
+    //fsleep(0.1);
     left_count = mc.get_left_ticks(); 
     right_count = mc.get_right_ticks();
     printf("Left: %d Right: %d\n", left_count, right_count);

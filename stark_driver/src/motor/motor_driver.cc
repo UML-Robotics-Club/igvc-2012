@@ -8,6 +8,7 @@ using std::endl;
 
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
+#include "stark_driver/EncoderStamped.h"
 
 #include "MotorDriver.hh"
 #include "croak.hh"
@@ -40,11 +41,18 @@ main(int argc, char* argv[])
 
     motor = new MotorDriver(device);
     ros::Subscriber sub = node.subscribe("cmd_vel", 1000, got_cmd_vel);
-
     cout << "Node stark_driver listening for messages." << endl;
-    ros::spin();
+    ros::Publisher encoder_pub = node.advertise<stark_driver::EncoderStamped>("encoder_ticks", 5);
+    ros::Rate encoder_rate(10.0f);
+    stark_driver::EncoderStamped encoder_msg;
+    while(ros::ok()){
+      encoder_msg.left_ticks = motor->GetLeftTicks();
+      encoder_msg.right_ticks = motor->GetRightTicks();
+      encoder_pub.publish(encoder_msg);
+      ros::spinOnce();
+      encoder_rate.sleep();
+    }
 
-    delete motor;
-    
+    delete motor;    
     return 0;
 }
