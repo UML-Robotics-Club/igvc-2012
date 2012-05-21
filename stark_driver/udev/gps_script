@@ -1,0 +1,7 @@
+#!/usr/bin/perl
+use warnings FATAL => 'all';
+use strict;
+
+my $dev = $ENV{'DEVNAME'};
+system(qq{echo "$dev" >> /tmp/devices.gps});
+#system(qq{/lib/udev/gpsd.hotplug add "$dev"});

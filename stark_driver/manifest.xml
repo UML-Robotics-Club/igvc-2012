@@ -1,0 +1,14 @@
+<package>
+  <description brief="stark_driver">
+     stark_driver
+  </description>
+  <author>Nat Tuck</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/stark_driver</url>
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="geometry_util"/>
+  <depend package="bullet"/>
+</package>

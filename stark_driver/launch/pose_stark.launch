@@ -1,0 +1,7 @@
+<launch>
+   <node pkg="os5000" type="osdriver.py" name="osdriver" 
+            output="screen" respawn="true" />
+
+    <node pkg="stark_driver" type="pose_driver" name="pose_driver"
+            output="screen" respawn="true" ns="robot" />
+</launch>

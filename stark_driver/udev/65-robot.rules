@@ -1,0 +1,22 @@
+# Robot Rules for UMass Lowell Robots Stark & MCP
+# Written on Stark, June 2 2010 by Mark Sherman msherman@cs.uml.edu
+#### Copy this file as root to /etc/udev/rules.d/ with 644 permissions.
+
+# Find compass, an FTDI usb/serial converter with the specific string set.
+SUBSYSTEM=="tty", ATTRS{interface}=="Arduino with Compass", SYMLINK+="ttyUSBcompass"
+
+# This used to be GPS0
+#SUBSYSTEM=="tty", ATTRS{interface}=="GPS", SYMLINK+="ttyUSBgps0"
+
+# Jeff's IMU
+SUBSYSTEM=="tty", ATTRS{interface}=="US232R", DRIVERS=="ftdi_sio", MODE="0666", SYMLINK+="ttyUSBimu"
+
+# The motor controller on an FTDI chip.
+SUBSYSTEMS=="usb-serial", DRIVERS=="ftdi_sio", SYMLINK+="ttyUSBmotor", RUN+="/etc/udev/nongps_script"
+
+# Find GPSes, which are prolific devices. Can't be customized.
+SUBSYSTEM=="tty", DRIVERS=="pl2303", RUN+="/etc/udev/gps_script"
+
+# Find Motor Controller, a keyspan device.
+# WARNING: adding a second keyspan device to the system may cause unexpected behavior
+#SUBSYSTEM=="tty", DRIVERS=="keyspan_1", SYMLINK+="ttyUSBmotorcontroller"

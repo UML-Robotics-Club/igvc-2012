@@ -1,0 +1,8 @@
+
+<launch>
+  <node name="motor_driver" pkg="stark_driver" type="motor_driver" 
+        respawn="true">
+    <param name="device" value="/dev/ax3500" />
+    <remap from="/motor_driver/cmd_vel" to="/robot/cmd_vel"/>
+  </node>
+</launch>

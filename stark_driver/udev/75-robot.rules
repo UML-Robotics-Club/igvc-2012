@@ -1,0 +1,6 @@
+# To get info:
+#  udevadm info -a -p $(udevadm info -q path -n /dev/ttyUSBx)
+
+SUBSYSTEMS=="usb", ATTRS{interface}=="Motor Controller", NAME="ax3500", OWNER="stark"
+SUBSYSTEMS=="usb", ATTRS{interface}=="GPS", NAME="ttyGPS0", OWNER="stark"
+SUBSYSTEMS=="usb", DRIVERS=="pl2303", NAME="ttyGPS1", OWNER="stark"
