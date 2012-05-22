@@ -1,0 +1,7 @@
+<!-- -*- xml -*- -->
+<launch>
+    <group ns="robot">
+        <node name="cam" pkg="kec_line" type="camera_driver.py" required="true" />
+        <node name="c_lines" pkg="kec_line" type="c_lines" required="true" />
+    </group>
+</launch>
