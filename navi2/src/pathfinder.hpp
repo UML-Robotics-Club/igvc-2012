@@ -2,11 +2,14 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include "std_msgs/ColorRGBA.h"
 #include "nav_msgs/OccupancyGrid.h"
 #include "nav_msgs/Path.h"
+#include "geometry_msgs/Point.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseArray.h"
+#include "visualization_msgs/Marker.h"
 #include "tf/transform_listener.h"
 
 #define HOME_NODE (SearchNode*)3
@@ -40,13 +43,13 @@ public:
     Pathfinder(ros::NodeHandle& nh);
     
     void SetTarget(double xt, double yt);
-    nav_msgs::Path MakePath(double timeout, std::vector<nav_msgs::OccupancyGrid>& maps);
+    nav_msgs::Path MakePath(std::vector<nav_msgs::OccupancyGrid>& maps);
     nav_msgs::Path GetLastPath();
     
 protected:
     
     ros::NodeHandle &m_nh;
-    ros::Publisher m_poses;
+    ros::Publisher m_poses, m_debug;
     
     bool At(std::vector<nav_msgs::OccupancyGrid>& maps, int x, int y);
     bool LOS(std::vector<nav_msgs::OccupancyGrid>& maps, SearchNode* a, SearchNode* b);

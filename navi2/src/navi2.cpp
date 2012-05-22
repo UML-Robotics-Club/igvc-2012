@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
         std::vector<nav_msgs::OccupancyGrid> maps;
         maps.push_back(nav_msgs::OccupancyGrid(*laserGrid));
         
-        pathPub.publish(pather.MakePath(200.0, maps));
+        pathPub.publish(pather.MakePath(maps));
     }
 }
 

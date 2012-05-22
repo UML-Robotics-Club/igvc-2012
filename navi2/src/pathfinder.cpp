@@ -34,8 +34,9 @@ Pathfinder::Pathfinder(ros::NodeHandle& nh) : m_nh(nh)
     SetTarget(0, 0);
  
     m_poses = nh.advertise<geometry_msgs::PoseArray>("path_debug", 1);
+    m_debug = nh.advertise<visualization_msgs::Marker>("path_debug2", 1);
     
-    ros::param::param<double>("~pathfinderTolerance", m_tolerance, 0.7);
+    ros::param::param<double>("~pathfinderTolerance", m_tolerance, 0.4);
 }
 
 void Pathfinder::SetTarget(double xt, double yt)
@@ -44,7 +45,7 @@ void Pathfinder::SetTarget(double xt, double yt)
     m_yt = yt;
 }
 
-nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::OccupancyGrid>& maps)
+nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
 {
     SearchNodeCmp::SetTarget(m_xt / maps.front().info.resolution, m_yt / maps.front().info.resolution);
     std::priority_queue<SearchNode*, std::vector<SearchNode*>, SearchNodeCmp> queue;
@@ -81,8 +82,7 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
     queue.top()->m_parent = HOME_NODE;
     
     ROS_INFO("START (FL): %lf, %lf", transform.getOrigin().x(), transform.getOrigin().y());
-    ROS_INFO("START (CO): %d, %d", xx, yy);
-    ROS_INFO("START (AC): %d, %d", queue.top()->m_x, queue.top()->m_y);
+    ROS_INFO("TARGE (FL): %lf, %lf", m_xt, m_yt);
     
     ROS_INFO("NODE DETAILS: %d %d %lf", 
              m_searchmap[yy * maps.front().info.width + xx].m_x,
@@ -193,9 +193,6 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
                             
                             if (nxt->m_parent == NULL || (nxt->m_parent != HOME_NODE && nxt->m_parent->m_cost > cur->m_cost))
                             {
-                                /*nxt->m_cost = cur->m_cost + hypot(nxt->m_x - cur->m_x, 
-                                                                  nxt->m_y - cur->m_y);
-                                nxt->m_parent = cur;*/
                                 
                                 if (cur->m_parent > HOME_NODE && LOS(maps, cur->m_parent, nxt))
                                 {
@@ -203,12 +200,110 @@ nav_msgs::Path Pathfinder::MakePath(double timeout, std::vector<nav_msgs::Occupa
                                                                                 nxt->m_y - cur->m_parent->m_y);
                                     nxt->m_parent = cur->m_parent;
                                     
+                                    if (cur->m_parent > HOME_NODE)
+                                    {
+                                        visualization_msgs::Marker mark;
+                                        
+                                        mark.header.stamp = ros::Time::now();
+                                        mark.header.frame_id = "/map";
+                                        mark.action = visualization_msgs::Marker::ADD;
+                                        mark.ns = "P_LOS";
+                                        mark.id = nx + ny * 1000;
+                                        mark.type = visualization_msgs::Marker::LINE_STRIP;
+                                        mark.lifetime = ros::Duration();
+                                        
+                                        mark.scale.x = 0.01;
+                                        
+                                        mark.pose.orientation.x = 0.0;
+                                        mark.pose.orientation.y = 0.0;
+                                        mark.pose.orientation.z = 0.0;
+                                        mark.pose.orientation.w = 1.0;
+                                        
+                                        mark.color.r = 1.0;
+                                        mark.color.g = 0.0;
+                                        mark.color.b = 0.0;
+                                        mark.color.a = 1.0;
+                                        
+                                        mark.points.push_back(geometry_msgs::Point());
+                                        mark.points.back().x = cur->m_parent->m_x * maps.front().info.resolution;
+                                        mark.points.back().y = cur->m_parent->m_y * maps.front().info.resolution;
+                                        mark.points.back().z = cur->m_parent->m_cost / 50.0;
+                                        
+                                        mark.points.push_back(geometry_msgs::Point());
+                                        mark.points.back().x = nxt->m_x * maps.front().info.resolution;
+                                        mark.points.back().y = nxt->m_y * maps.front().info.resolution;
+                                        mark.points.back().z = nxt->m_cost / 50.0;
+                                        
+                                        mark.colors.push_back(std_msgs::ColorRGBA());
+                                        mark.colors.back().r = 0.0;
+                                        mark.colors.back().g = 1.0;
+                                        mark.colors.back().b = 0.0;
+                                        mark.colors.back().a = 1.0;
+                                        
+                                        mark.colors.push_back(std_msgs::ColorRGBA());
+                                        mark.colors.back().r = 0.0;
+                                        mark.colors.back().g = 1.0;
+                                        mark.colors.back().b = 0.0;
+                                        mark.colors.back().a = 1.0;
+                                        
+                                        m_debug.publish(mark);
+                                    }
+                                    
                                 }
                                 else
                                 {
                                     nxt->m_cost = cur->m_cost + hypot(nxt->m_x - cur->m_x, 
                                                                       nxt->m_y - cur->m_y);
                                     nxt->m_parent = cur;
+                                    
+                                    if (cur->m_parent > HOME_NODE)
+                                    {
+                                        visualization_msgs::Marker mark;
+                                        
+                                        mark.header.stamp = ros::Time::now();
+                                        mark.header.frame_id = "/map";
+                                        mark.action = visualization_msgs::Marker::ADD;
+                                        mark.ns = "F_LOS";
+                                        mark.id = nx + ny * 1000;
+                                        mark.type = visualization_msgs::Marker::LINE_STRIP;
+                                        mark.lifetime = ros::Duration();
+                                        
+                                        mark.scale.x = 0.01;
+                                        
+                                        mark.pose.orientation.x = 0.0;
+                                        mark.pose.orientation.y = 0.0;
+                                        mark.pose.orientation.z = 0.0;
+                                        mark.pose.orientation.w = 1.0;
+                                        
+                                        mark.color.r = 1.0;
+                                        mark.color.g = 0.0;
+                                        mark.color.b = 0.0;
+                                        mark.color.a = 1.0;
+                                        
+                                        mark.points.push_back(geometry_msgs::Point());
+                                        mark.points.back().x = cur->m_parent->m_x * maps.front().info.resolution;
+                                        mark.points.back().y = cur->m_parent->m_y * maps.front().info.resolution;
+                                        mark.points.back().z = cur->m_parent->m_cost / 50.0;
+                                        
+                                        mark.points.push_back(geometry_msgs::Point());
+                                        mark.points.back().x = nxt->m_x * maps.front().info.resolution;
+                                        mark.points.back().y = nxt->m_y * maps.front().info.resolution;
+                                        mark.points.back().z = nxt->m_cost / 50.0;
+                                        
+                                        mark.colors.push_back(std_msgs::ColorRGBA());
+                                        mark.colors.back().r = 1.0;
+                                        mark.colors.back().g = 0.0;
+                                        mark.colors.back().b = 0.0;
+                                        mark.colors.back().a = 1.0;
+                                        
+                                        mark.colors.push_back(std_msgs::ColorRGBA());
+                                        mark.colors.back().r = 1.0;
+                                        mark.colors.back().g = 0.0;
+                                        mark.colors.back().b = 0.0;
+                                        mark.colors.back().a = 1.0;
+                                        
+                                        m_debug.publish(mark);
+                                    }
                                 }
                                 
                                 queue.push(nxt);
@@ -267,17 +362,17 @@ bool Pathfinder::LOS(std::vector<nav_msgs::OccupancyGrid>& maps, SearchNode* a, 
     double xInc = cos(yaw), yInc = sin(yaw);
     double xx = a->m_x, yy = a->m_y;
     
-    for (int len = 0; len < hypot(xx - b->m_x, yy - b->m_y); len++)
+    for (int len = 0; len < hypot(a->m_x - b->m_x, a->m_y - b->m_y); len++)
     {
-        if (!(At(maps,
-                 xx / maps.front().info.resolution,
-                 yy / maps.front().info.resolution)))
+        if (At(maps, (int)xx, (int)yy))
+        {
+            xx += xInc;
+            yy += yInc;
+        }
+        else
         {
             return false;
         }
-        
-        xx += xInc;
-        yy += yInc;
     }
     
     return true;
