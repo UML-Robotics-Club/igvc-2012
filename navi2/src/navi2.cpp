@@ -64,9 +64,12 @@ int main(int argc, char* argv[])
     
     //sleep(2000);
     
+    ros::Rate r(10);
+    
     while (true)
     {
         ros::spinOnce();
+        r.sleep();
         
         std::vector<nav_msgs::OccupancyGrid> maps;
         maps.push_back(nav_msgs::OccupancyGrid(*laserGrid));

@@ -1,7 +1,6 @@
 #include <queue>
 #include <vector>
 #include <string>
-#include <sstream>
 #include "std_msgs/ColorRGBA.h"
 #include "nav_msgs/OccupancyGrid.h"
 #include "nav_msgs/Path.h"
@@ -10,6 +9,7 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseArray.h"
 #include "visualization_msgs/Marker.h"
+#include "visualization_msgs/MarkerArray.h"
 #include "tf/transform_listener.h"
 
 #define HOME_NODE (SearchNode*)3
@@ -49,10 +49,14 @@ public:
 protected:
     
     ros::NodeHandle &m_nh;
-    ros::Publisher m_poses, m_debug;
+    ros::Publisher m_debug;
     
     bool At(std::vector<nav_msgs::OccupancyGrid>& maps, int x, int y);
     bool LOS(std::vector<nav_msgs::OccupancyGrid>& maps, SearchNode* a, SearchNode* b);
+    
+    visualization_msgs::Marker RedDebugLine(SearchNode* a, SearchNode* b, double res);
+    visualization_msgs::Marker GreenDebugLine(SearchNode* a, SearchNode* b, double res);
+    visualization_msgs::Marker DebugArrow(SearchNode* a, double res);
     
     double m_xt, m_yt, m_tolerance;
     SearchNode *m_searchmap;

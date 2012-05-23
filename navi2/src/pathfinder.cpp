@@ -33,8 +33,7 @@ Pathfinder::Pathfinder(ros::NodeHandle& nh) : m_nh(nh)
 {
     SetTarget(0, 0);
  
-    m_poses = nh.advertise<geometry_msgs::PoseArray>("path_debug", 1);
-    m_debug = nh.advertise<visualization_msgs::Marker>("path_debug2", 1);
+    m_debug = nh.advertise<visualization_msgs::MarkerArray>("path_debug", 1);
     
     ros::param::param<double>("~pathfinderTolerance", m_tolerance, 0.4);
 }
@@ -89,8 +88,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
              m_searchmap[yy * maps.front().info.width + xx].m_y,
              m_searchmap[yy * maps.front().info.width + xx].m_cost);
     
-    geometry_msgs::PoseArray markers;
-    markers.header.frame_id = "/map";
+    visualization_msgs::MarkerArray markers;
     
     while (!queue.empty() && queue.size() < 500000)
     {
@@ -99,30 +97,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         queue.pop();
         
         
-        {
-            geometry_msgs::Pose marker;
-            
-            marker.position.x = cur->m_x * maps.front().info.resolution;
-            marker.position.y = cur->m_y * maps.front().info.resolution;
-            
-            double yaw = 0;
-            
-            if (cur->m_parent > HOME_NODE)
-            {
-                yaw = atan2(cur->m_parent->m_y - cur->m_y,
-                            cur->m_parent->m_x - cur->m_x);
-            }
-            
-            tf::Quaternion quat;
-            quat.setRPY(0.0, 0.0, yaw);
-            
-            marker.orientation.x = quat.getX();
-            marker.orientation.y = quat.getY();
-            marker.orientation.z = quat.getZ();
-            marker.orientation.w = quat.getW();
-            
-            markers.poses.push_back(marker);
-        }
+        markers.markers.push_back(DebugArrow(cur, maps.front().info.resolution));
         
         //ROS_INFO("NODE(%d): %lf, %lf", queue.size(), cur->m_x, cur->m_y);
         
@@ -164,7 +139,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                 cur = cur->m_parent;
             }
             
-            m_poses.publish(markers);
+            m_debug.publish(markers);
             
             delete[] m_searchmap;
             
@@ -200,54 +175,8 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                                                                                 nxt->m_y - cur->m_parent->m_y);
                                     nxt->m_parent = cur->m_parent;
                                     
-                                    if (cur->m_parent > HOME_NODE)
-                                    {
-                                        visualization_msgs::Marker mark;
-                                        
-                                        mark.header.stamp = ros::Time::now();
-                                        mark.header.frame_id = "/map";
-                                        mark.action = visualization_msgs::Marker::ADD;
-                                        mark.ns = "P_LOS";
-                                        mark.id = nx + ny * 1000;
-                                        mark.type = visualization_msgs::Marker::LINE_STRIP;
-                                        mark.lifetime = ros::Duration();
-                                        
-                                        mark.scale.x = 0.01;
-                                        
-                                        mark.pose.orientation.x = 0.0;
-                                        mark.pose.orientation.y = 0.0;
-                                        mark.pose.orientation.z = 0.0;
-                                        mark.pose.orientation.w = 1.0;
-                                        
-                                        mark.color.r = 1.0;
-                                        mark.color.g = 0.0;
-                                        mark.color.b = 0.0;
-                                        mark.color.a = 1.0;
-                                        
-                                        mark.points.push_back(geometry_msgs::Point());
-                                        mark.points.back().x = cur->m_parent->m_x * maps.front().info.resolution;
-                                        mark.points.back().y = cur->m_parent->m_y * maps.front().info.resolution;
-                                        mark.points.back().z = cur->m_parent->m_cost / 50.0;
-                                        
-                                        mark.points.push_back(geometry_msgs::Point());
-                                        mark.points.back().x = nxt->m_x * maps.front().info.resolution;
-                                        mark.points.back().y = nxt->m_y * maps.front().info.resolution;
-                                        mark.points.back().z = nxt->m_cost / 50.0;
-                                        
-                                        mark.colors.push_back(std_msgs::ColorRGBA());
-                                        mark.colors.back().r = 0.0;
-                                        mark.colors.back().g = 1.0;
-                                        mark.colors.back().b = 0.0;
-                                        mark.colors.back().a = 1.0;
-                                        
-                                        mark.colors.push_back(std_msgs::ColorRGBA());
-                                        mark.colors.back().r = 0.0;
-                                        mark.colors.back().g = 1.0;
-                                        mark.colors.back().b = 0.0;
-                                        mark.colors.back().a = 1.0;
-                                        
-                                        m_debug.publish(mark);
-                                    }
+                                    //Viz Passed checks
+                                    markers.markers.push_back(GreenDebugLine(cur->m_parent, nxt, maps.front().info.resolution));
                                     
                                 }
                                 else
@@ -258,51 +187,8 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                                     
                                     if (cur->m_parent > HOME_NODE)
                                     {
-                                        visualization_msgs::Marker mark;
-                                        
-                                        mark.header.stamp = ros::Time::now();
-                                        mark.header.frame_id = "/map";
-                                        mark.action = visualization_msgs::Marker::ADD;
-                                        mark.ns = "F_LOS";
-                                        mark.id = nx + ny * 1000;
-                                        mark.type = visualization_msgs::Marker::LINE_STRIP;
-                                        mark.lifetime = ros::Duration();
-                                        
-                                        mark.scale.x = 0.01;
-                                        
-                                        mark.pose.orientation.x = 0.0;
-                                        mark.pose.orientation.y = 0.0;
-                                        mark.pose.orientation.z = 0.0;
-                                        mark.pose.orientation.w = 1.0;
-                                        
-                                        mark.color.r = 1.0;
-                                        mark.color.g = 0.0;
-                                        mark.color.b = 0.0;
-                                        mark.color.a = 1.0;
-                                        
-                                        mark.points.push_back(geometry_msgs::Point());
-                                        mark.points.back().x = cur->m_parent->m_x * maps.front().info.resolution;
-                                        mark.points.back().y = cur->m_parent->m_y * maps.front().info.resolution;
-                                        mark.points.back().z = cur->m_parent->m_cost / 50.0;
-                                        
-                                        mark.points.push_back(geometry_msgs::Point());
-                                        mark.points.back().x = nxt->m_x * maps.front().info.resolution;
-                                        mark.points.back().y = nxt->m_y * maps.front().info.resolution;
-                                        mark.points.back().z = nxt->m_cost / 50.0;
-                                        
-                                        mark.colors.push_back(std_msgs::ColorRGBA());
-                                        mark.colors.back().r = 1.0;
-                                        mark.colors.back().g = 0.0;
-                                        mark.colors.back().b = 0.0;
-                                        mark.colors.back().a = 1.0;
-                                        
-                                        mark.colors.push_back(std_msgs::ColorRGBA());
-                                        mark.colors.back().r = 1.0;
-                                        mark.colors.back().g = 0.0;
-                                        mark.colors.back().b = 0.0;
-                                        mark.colors.back().a = 1.0;
-                                        
-                                        m_debug.publish(mark);
+                                        //Viz Failed checks
+                                        markers.markers.push_back(RedDebugLine(cur->m_parent, nxt, maps.front().info.resolution));
                                     }
                                 }
                                 
@@ -324,7 +210,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         ROS_INFO("TERMINATED DUE TO FAIL");
     }
     
-    m_poses.publish(markers);
+    m_debug.publish(markers);
     
     delete[] m_searchmap;
     
@@ -376,4 +262,145 @@ bool Pathfinder::LOS(std::vector<nav_msgs::OccupancyGrid>& maps, SearchNode* a, 
     }
     
     return true;
+}
+
+visualization_msgs::Marker Pathfinder::RedDebugLine(SearchNode* a, SearchNode* b, double res)
+{
+    visualization_msgs::Marker mark;
+                                        
+    mark.header.stamp = ros::Time::now();
+    mark.header.frame_id = "/map";
+    mark.action = visualization_msgs::Marker::ADD;
+    mark.ns = "Failed_LOS";
+    mark.id = a->m_x + 500 * a->m_y + 500 * 500 * b->m_x + 500 * 500 * 500 * b->m_x;
+    mark.type = visualization_msgs::Marker::LINE_STRIP;
+    mark.lifetime = ros::Duration(1.0);
+    
+    mark.scale.x = 0.01;
+    
+    mark.pose.orientation.x = 0.0;
+    mark.pose.orientation.y = 0.0;
+    mark.pose.orientation.z = 0.0;
+    mark.pose.orientation.w = 1.0;
+    
+    mark.color.r = 1.0;
+    mark.color.g = 0.0;
+    mark.color.b = 0.0;
+    mark.color.a = 1.0;
+    
+    mark.points.push_back(geometry_msgs::Point());
+    mark.points.back().x = a->m_x * res;
+    mark.points.back().y = a->m_y * res;
+    mark.points.back().z = a->m_cost / 50.0;
+    
+    mark.points.push_back(geometry_msgs::Point());
+    mark.points.back().x = b->m_x * res;
+    mark.points.back().y = b->m_y * res;
+    mark.points.back().z = b->m_cost / 50.0;
+    
+    mark.colors.push_back(std_msgs::ColorRGBA());
+    mark.colors.back().r = 1.0;
+    mark.colors.back().g = 0.0;
+    mark.colors.back().b = 0.0;
+    mark.colors.back().a = 1.0;
+    
+    mark.colors.push_back(std_msgs::ColorRGBA());
+    mark.colors.back().r = 1.0;
+    mark.colors.back().g = 0.0;
+    mark.colors.back().b = 0.0;
+    mark.colors.back().a = 1.0;
+    
+    return mark;
+}
+
+visualization_msgs::Marker Pathfinder::GreenDebugLine(SearchNode* a, SearchNode* b, double res)
+{
+    visualization_msgs::Marker mark;
+                                        
+    mark.header.stamp = ros::Time::now();
+    mark.header.frame_id = "/map";
+    mark.action = visualization_msgs::Marker::ADD;
+    mark.ns = "Passed_LOS";
+    mark.id = a->m_x + 500 * a->m_y + 500 * 500 * b->m_x + 500 * 500 * 500 * b->m_x;
+    mark.type = visualization_msgs::Marker::LINE_STRIP;
+    mark.lifetime = ros::Duration(1.0);
+    
+    mark.scale.x = 0.01;
+    
+    mark.pose.orientation.x = 0.0;
+    mark.pose.orientation.y = 0.0;
+    mark.pose.orientation.z = 0.0;
+    mark.pose.orientation.w = 1.0;
+    
+    mark.color.r = 1.0;
+    mark.color.g = 0.0;
+    mark.color.b = 0.0;
+    mark.color.a = 1.0;
+    
+    mark.points.push_back(geometry_msgs::Point());
+    mark.points.back().x = a->m_x * res;
+    mark.points.back().y = a->m_y * res;
+    mark.points.back().z = a->m_cost / 50.0;
+    
+    mark.points.push_back(geometry_msgs::Point());
+    mark.points.back().x = b->m_x * res;
+    mark.points.back().y = b->m_y * res;
+    mark.points.back().z = b->m_cost / 50.0;
+    
+    mark.colors.push_back(std_msgs::ColorRGBA());
+    mark.colors.back().r = 0.0;
+    mark.colors.back().g = 1.0;
+    mark.colors.back().b = 0.0;
+    mark.colors.back().a = 1.0;
+    
+    mark.colors.push_back(std_msgs::ColorRGBA());
+    mark.colors.back().r = 0.0;
+    mark.colors.back().g = 1.0;
+    mark.colors.back().b = 0.0;
+    mark.colors.back().a = 1.0;
+    
+    return mark;
+}
+
+visualization_msgs::Marker Pathfinder::DebugArrow(SearchNode* a, double res)
+{
+    visualization_msgs::Marker mark;
+                                        
+    mark.header.stamp = ros::Time::now();
+    mark.header.frame_id = "/map";
+    mark.action = visualization_msgs::Marker::ADD;
+    mark.ns = "Expansion";
+    mark.id = a->m_x + 500 * a->m_y;
+    mark.type = visualization_msgs::Marker::ARROW;
+    mark.lifetime = ros::Duration(1.0);
+    
+    mark.scale.x = 0.25;
+    mark.scale.y = 0.25;
+    mark.scale.z = res / 1.5;
+    
+    double yaw = 0;
+    
+    if (a->m_parent > HOME_NODE)
+    {
+        yaw = atan2(a->m_parent->m_y - a->m_y,
+                    a->m_parent->m_x - a->m_x);
+    }
+    
+    tf::Quaternion quat;
+    quat.setRPY(0.0, 0.0, yaw);
+    
+    mark.pose.orientation.x = quat.getX();
+    mark.pose.orientation.y = quat.getY();
+    mark.pose.orientation.z = quat.getZ();
+    mark.pose.orientation.w = quat.getW();
+    
+    mark.pose.position.x = a->m_x * res;
+    mark.pose.position.y = a->m_y * res;
+    
+    mark.color.r = 0.0;
+    mark.color.g = 0.0;
+    mark.color.b = 1.0;
+    mark.color.a = 1.0;
+    
+    return mark;
 }
