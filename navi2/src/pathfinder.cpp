@@ -90,6 +90,58 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
     
     visualization_msgs::MarkerArray markers;
     
+    {
+        //Red Lines
+        visualization_msgs::Marker mark;
+        
+        mark.header.stamp = ros::Time::now();
+        mark.header.frame_id = "/map";
+        mark.action = visualization_msgs::Marker::ADD;
+        mark.ns = "Failed_LOS";
+        mark.id = 1;
+        mark.type = visualization_msgs::Marker::LINE_STRIP;
+        mark.lifetime = ros::Duration();
+        
+        mark.scale.x = 0.01;
+        
+        mark.pose.orientation.x = 0.0;
+        mark.pose.orientation.y = 0.0;
+        mark.pose.orientation.z = 0.0;
+        mark.pose.orientation.w = 1.0;
+        
+        mark.color.r = 1.0;
+        mark.color.g = 0.0;
+        mark.color.b = 0.0;
+        mark.color.a = 1.0;   
+        markers.markers.push_back(mark);
+    }
+    
+    {
+        //Green Lines
+        visualization_msgs::Marker mark;
+        
+        mark.header.stamp = ros::Time::now();
+        mark.header.frame_id = "/map";
+        mark.action = visualization_msgs::Marker::ADD;
+        mark.ns = "Passed_LOS";
+        mark.id = 1;
+        mark.type = visualization_msgs::Marker::LINE_STRIP;
+        mark.lifetime = ros::Duration();
+        
+        mark.scale.x = 0.01;
+        
+        mark.pose.orientation.x = 0.0;
+        mark.pose.orientation.y = 0.0;
+        mark.pose.orientation.z = 0.0;
+        mark.pose.orientation.w = 1.0;
+        
+        mark.color.r = 0.0;
+        mark.color.g = 1.0;
+        mark.color.b = 0.0;
+        mark.color.a = 1.0;   
+        markers.markers.push_back(mark);
+    }
+    
     while (!queue.empty() && queue.size() < 500000)
     {
         SearchNode* nxt;
@@ -176,7 +228,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                                     nxt->m_parent = cur->m_parent;
                                     
                                     //Viz Passed checks
-                                    markers.markers.push_back(GreenDebugLine(cur->m_parent, nxt, maps.front().info.resolution));
+                                    GreenDebugLine(markers, cur->m_parent, nxt, maps.front().info.resolution);
                                     
                                 }
                                 else
@@ -188,7 +240,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                                     if (cur->m_parent > HOME_NODE)
                                     {
                                         //Viz Failed checks
-                                        markers.markers.push_back(RedDebugLine(cur->m_parent, nxt, maps.front().info.resolution));
+                                        RedDebugLine(markers, cur->m_parent, nxt, maps.front().info.resolution);
                                     }
                                 }
                                 
@@ -264,102 +316,54 @@ bool Pathfinder::LOS(std::vector<nav_msgs::OccupancyGrid>& maps, SearchNode* a, 
     return true;
 }
 
-visualization_msgs::Marker Pathfinder::RedDebugLine(SearchNode* a, SearchNode* b, double res)
-{
-    visualization_msgs::Marker mark;
-                                        
-    mark.header.stamp = ros::Time::now();
-    mark.header.frame_id = "/map";
-    mark.action = visualization_msgs::Marker::ADD;
-    mark.ns = "Failed_LOS";
-    mark.id = a->m_x + 500 * a->m_y + 500 * 500 * b->m_x + 500 * 500 * 500 * b->m_x;
-    mark.type = visualization_msgs::Marker::LINE_STRIP;
-    mark.lifetime = ros::Duration(1.0);
+void Pathfinder::RedDebugLine(visualization_msgs::MarkerArray& markers, SearchNode* a, SearchNode* b, double res)
+{   
+    markers.markers[0].points.push_back(geometry_msgs::Point());
+    markers.markers[0].points.back().x = a->m_x * res;
+    markers.markers[0].points.back().y = a->m_y * res;
+    markers.markers[0].points.back().z = a->m_cost / 50.0;
     
-    mark.scale.x = 0.01;
+    markers.markers[0].points.push_back(geometry_msgs::Point());
+    markers.markers[0].points.back().x = b->m_x * res;
+    markers.markers[0].points.back().y = b->m_y * res;
+    markers.markers[0].points.back().z = b->m_cost / 50.0;
     
-    mark.pose.orientation.x = 0.0;
-    mark.pose.orientation.y = 0.0;
-    mark.pose.orientation.z = 0.0;
-    mark.pose.orientation.w = 1.0;
+    markers.markers[0].colors.push_back(std_msgs::ColorRGBA());
+    markers.markers[0].colors.back().r = 1.0;
+    markers.markers[0].colors.back().g = 0.0;
+    markers.markers[0].colors.back().b = 0.0;
+    markers.markers[0].colors.back().a = 1.0;
     
-    mark.color.r = 1.0;
-    mark.color.g = 0.0;
-    mark.color.b = 0.0;
-    mark.color.a = 1.0;
-    
-    mark.points.push_back(geometry_msgs::Point());
-    mark.points.back().x = a->m_x * res;
-    mark.points.back().y = a->m_y * res;
-    mark.points.back().z = a->m_cost / 50.0;
-    
-    mark.points.push_back(geometry_msgs::Point());
-    mark.points.back().x = b->m_x * res;
-    mark.points.back().y = b->m_y * res;
-    mark.points.back().z = b->m_cost / 50.0;
-    
-    mark.colors.push_back(std_msgs::ColorRGBA());
-    mark.colors.back().r = 1.0;
-    mark.colors.back().g = 0.0;
-    mark.colors.back().b = 0.0;
-    mark.colors.back().a = 1.0;
-    
-    mark.colors.push_back(std_msgs::ColorRGBA());
-    mark.colors.back().r = 1.0;
-    mark.colors.back().g = 0.0;
-    mark.colors.back().b = 0.0;
-    mark.colors.back().a = 1.0;
-    
-    return mark;
+    markers.markers[0].colors.push_back(std_msgs::ColorRGBA());
+    markers.markers[0].colors.back().r = 1.0;
+    markers.markers[0].colors.back().g = 0.0;
+    markers.markers[0].colors.back().b = 0.0;
+    markers.markers[0].colors.back().a = 1.0;
 }
 
-visualization_msgs::Marker Pathfinder::GreenDebugLine(SearchNode* a, SearchNode* b, double res)
+void Pathfinder::GreenDebugLine(visualization_msgs::MarkerArray& markers, SearchNode* a, SearchNode* b, double res)
 {
-    visualization_msgs::Marker mark;
-                                        
-    mark.header.stamp = ros::Time::now();
-    mark.header.frame_id = "/map";
-    mark.action = visualization_msgs::Marker::ADD;
-    mark.ns = "Passed_LOS";
-    mark.id = a->m_x + 500 * a->m_y + 500 * 500 * b->m_x + 500 * 500 * 500 * b->m_x;
-    mark.type = visualization_msgs::Marker::LINE_STRIP;
-    mark.lifetime = ros::Duration(1.0);
+    markers.markers[1].points.push_back(geometry_msgs::Point());
+    markers.markers[1].points.back().x = a->m_x * res;
+    markers.markers[1].points.back().y = a->m_y * res;
+    markers.markers[1].points.back().z = a->m_cost / 50.0;
     
-    mark.scale.x = 0.01;
+    markers.markers[1].points.push_back(geometry_msgs::Point());
+    markers.markers[1].points.back().x = b->m_x * res;
+    markers.markers[1].points.back().y = b->m_y * res;
+    markers.markers[1].points.back().z = b->m_cost / 50.0;
     
-    mark.pose.orientation.x = 0.0;
-    mark.pose.orientation.y = 0.0;
-    mark.pose.orientation.z = 0.0;
-    mark.pose.orientation.w = 1.0;
+    markers.markers[1].colors.push_back(std_msgs::ColorRGBA());
+    markers.markers[1].colors.back().r = 0.0;
+    markers.markers[1].colors.back().g = 1.0;
+    markers.markers[1].colors.back().b = 0.0;
+    markers.markers[1].colors.back().a = 1.0;
     
-    mark.color.r = 1.0;
-    mark.color.g = 0.0;
-    mark.color.b = 0.0;
-    mark.color.a = 1.0;
-    
-    mark.points.push_back(geometry_msgs::Point());
-    mark.points.back().x = a->m_x * res;
-    mark.points.back().y = a->m_y * res;
-    mark.points.back().z = a->m_cost / 50.0;
-    
-    mark.points.push_back(geometry_msgs::Point());
-    mark.points.back().x = b->m_x * res;
-    mark.points.back().y = b->m_y * res;
-    mark.points.back().z = b->m_cost / 50.0;
-    
-    mark.colors.push_back(std_msgs::ColorRGBA());
-    mark.colors.back().r = 0.0;
-    mark.colors.back().g = 1.0;
-    mark.colors.back().b = 0.0;
-    mark.colors.back().a = 1.0;
-    
-    mark.colors.push_back(std_msgs::ColorRGBA());
-    mark.colors.back().r = 0.0;
-    mark.colors.back().g = 1.0;
-    mark.colors.back().b = 0.0;
-    mark.colors.back().a = 1.0;
-    
-    return mark;
+    markers.markers[1].colors.push_back(std_msgs::ColorRGBA());
+    markers.markers[1].colors.back().r = 0.0;
+    markers.markers[1].colors.back().g = 1.0;
+    markers.markers[1].colors.back().b = 0.0;
+    markers.markers[1].colors.back().a = 1.0;
 }
 
 visualization_msgs::Marker Pathfinder::DebugArrow(SearchNode* a, double res)

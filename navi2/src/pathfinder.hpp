@@ -54,8 +54,8 @@ protected:
     bool At(std::vector<nav_msgs::OccupancyGrid>& maps, int x, int y);
     bool LOS(std::vector<nav_msgs::OccupancyGrid>& maps, SearchNode* a, SearchNode* b);
     
-    visualization_msgs::Marker RedDebugLine(SearchNode* a, SearchNode* b, double res);
-    visualization_msgs::Marker GreenDebugLine(SearchNode* a, SearchNode* b, double res);
+    void RedDebugLine(visualization_msgs::MarkerArray& markers, SearchNode* a, SearchNode* b, double res);
+    void GreenDebugLine(visualization_msgs::MarkerArray& markers, SearchNode* a, SearchNode* b, double res);
     visualization_msgs::Marker DebugArrow(SearchNode* a, double res);
     
     double m_xt, m_yt, m_tolerance;
