@@ -110,7 +110,6 @@ void raycast(Mat* in, sensor_msgs::LaserScan& scan){
     double theta;
     int i = (in->cols-1) / 2; //scan from center of bottom
     int j = (in->rows-1);
-    float dist = 0;
     int k = 0;
 
     for(theta = 2.0 * M_PI; theta > M_PI; theta -= M_PI / res){
@@ -134,5 +133,5 @@ float ray(Mat* in, int i, int j, double theta){
     }
 
     //else return max range
-    return RANGE * PPM;
+    return RANGE;
 }
