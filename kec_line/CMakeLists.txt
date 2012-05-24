@@ -33,3 +33,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(naive src/naive/naive.cpp)
 rosbuild_add_executable(c_lines src/c_lines.cpp)
 target_link_libraries(c_lines naive)
+
+rosbuild_add_executable(raycast src/raycast.cpp)
+target_link_libraries(raycast naive)
