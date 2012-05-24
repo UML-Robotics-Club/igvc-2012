@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('os5000')
+import roslib; roslib.load_manifest('ocean_driver')
 import rospy
 import math
 import serial
