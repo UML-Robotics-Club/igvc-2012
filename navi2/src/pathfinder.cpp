@@ -35,7 +35,7 @@ Pathfinder::Pathfinder(ros::NodeHandle& nh) : m_nh(nh)
  
     m_debug = nh.advertise<visualization_msgs::MarkerArray>("path_debug", 1);
     
-    ros::param::param<double>("~pathfinderTolerance", m_tolerance, 0.4);
+    ros::param::param<double>("~pathfinderTolerance", m_tolerance, 1.5);
 }
 
 void Pathfinder::SetTarget(double xt, double yt)
@@ -90,7 +90,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
     
     visualization_msgs::MarkerArray markers;
     
-    {
+    /*{
         //Red Lines
         visualization_msgs::Marker mark;
         
@@ -99,7 +99,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         mark.action = visualization_msgs::Marker::ADD;
         mark.ns = "Failed_LOS";
         mark.id = 1;
-        mark.type = visualization_msgs::Marker::LINE_STRIP;
+        mark.type = visualization_msgs::Marker::LINE_LIST;
         mark.lifetime = ros::Duration();
         
         mark.scale.x = 0.01;
@@ -125,7 +125,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         mark.action = visualization_msgs::Marker::ADD;
         mark.ns = "Passed_LOS";
         mark.id = 1;
-        mark.type = visualization_msgs::Marker::LINE_STRIP;
+        mark.type = visualization_msgs::Marker::LINE_LIST;
         mark.lifetime = ros::Duration();
         
         mark.scale.x = 0.01;
@@ -140,7 +140,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         mark.color.b = 0.0;
         mark.color.a = 1.0;   
         markers.markers.push_back(mark);
-    }
+    }*/
     
     while (!queue.empty() && queue.size() < 500000)
     {
@@ -148,22 +148,20 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         SearchNode* cur = queue.top();
         queue.pop();
         
-        
-        markers.markers.push_back(DebugArrow(cur, maps.front().info.resolution));
+        //markers.markers.push_back(DebugArrow(cur, maps.front().info.resolution));
         
         //ROS_INFO("NODE(%d): %lf, %lf", queue.size(), cur->m_x, cur->m_y);
         
         if (hypot(cur->m_x - m_xt / maps.front().info.resolution, 
                   cur->m_y - m_yt / maps.front().info.resolution) <= m_tolerance)
         {
-            ROS_INFO("DONE");
+            //Done - Assemble Path
             
             m_lastPath = nav_msgs::Path();
             m_lastPath.header.frame_id = "/map";
             
             while (cur != HOME_NODE)
             {
-                ROS_INFO("AS:%d %d-%d", m_lastPath.poses.size(), cur->m_x, cur->m_y);
                 geometry_msgs::PoseStamped pose;
                 
                 pose.header.frame_id = "/map";
@@ -228,7 +226,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                                     nxt->m_parent = cur->m_parent;
                                     
                                     //Viz Passed checks
-                                    GreenDebugLine(markers, cur->m_parent, nxt, maps.front().info.resolution);
+                                    //GreenDebugLine(markers, cur->m_parent, nxt, maps.front().info.resolution);
                                     
                                 }
                                 else
@@ -240,7 +238,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                                     if (cur->m_parent > HOME_NODE)
                                     {
                                         //Viz Failed checks
-                                        RedDebugLine(markers, cur->m_parent, nxt, maps.front().info.resolution);
+                                        //RedDebugLine(markers, cur->m_parent, nxt, maps.front().info.resolution);
                                     }
                                 }
                                 
@@ -251,15 +249,6 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                 }
             }
         }
-    }
-    
-    if (queue.size() >= 500000)
-    {
-        ROS_INFO("TERMINATED DUE TO # OF NODES");
-    }
-    else
-    {
-        ROS_INFO("TERMINATED DUE TO FAIL");
     }
     
     m_debug.publish(markers);
@@ -386,8 +375,8 @@ visualization_msgs::Marker Pathfinder::DebugArrow(SearchNode* a, double res)
     
     if (a->m_parent > HOME_NODE)
     {
-        yaw = atan2(a->m_parent->m_y - a->m_y,
-                    a->m_parent->m_x - a->m_x);
+        yaw = atan2(a->m_y - a->m_parent->m_y,
+                    a->m_x - a->m_parent->m_x);
     }
     
     tf::Quaternion quat;
@@ -405,6 +394,32 @@ visualization_msgs::Marker Pathfinder::DebugArrow(SearchNode* a, double res)
     mark.color.g = 0.0;
     mark.color.b = 1.0;
     mark.color.a = 1.0;
+    
+    /*std::stringstream ss;
+    
+    m_count++;
+    ss << std::setprecision(2) << hypot(a->m_x - m_xt / res, a->m_y - m_yt / res);
+    
+    mark.header.stamp = ros::Time::now();
+    mark.header.frame_id = "/map";
+    mark.action = visualization_msgs::Marker::ADD;
+    mark.ns = "Expansion";
+    mark.id = a->m_x + 500 * a->m_y;
+    mark.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    mark.lifetime = ros::Duration(1.0);
+    
+    mark.text = ss.str();
+    
+    mark.scale.z = res / 3.5;
+    mark.pose.orientation.w = 1.0;
+    
+    mark.pose.position.x = a->m_x * res;
+    mark.pose.position.y = a->m_y * res;
+    
+    mark.color.r = 0.0;
+    mark.color.g = 0.0;
+    mark.color.b = 1.0;
+    mark.color.a = 1.0;*/
     
     return mark;
 }
