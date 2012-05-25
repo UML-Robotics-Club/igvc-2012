@@ -42,12 +42,13 @@ main(int argc, char* argv[])
     motor = new MotorDriver(device);
     ros::Subscriber sub = node.subscribe("cmd_vel", 1000, got_cmd_vel);
     cout << "Node stark_driver listening for messages." << endl;
-    ros::Publisher encoder_pub = node.advertise<stark_driver::EncoderStamped>("encoder_ticks", 5);
+    ros::Publisher encoder_pub = node.advertise<stark_driver::EncoderStamped>("/robot/encoder_ticks", 5);
     ros::Rate encoder_rate(10.0f);
     stark_driver::EncoderStamped encoder_msg;
     while(ros::ok()){
       encoder_msg.left_ticks = motor->GetLeftTicks();
       encoder_msg.right_ticks = motor->GetRightTicks();
+      encoder_msg.header.stamp = ros::Time::now();
       encoder_pub.publish(encoder_msg);
       ros::spinOnce();
       encoder_rate.sleep();
