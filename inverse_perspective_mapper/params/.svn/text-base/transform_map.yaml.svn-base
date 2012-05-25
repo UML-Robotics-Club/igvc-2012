@@ -1,0 +1,5 @@
+img_pts: {bl_x: 239, bl_y: 437, br_x: 402, br_y: 437, tl_x: 256, tl_y: 322, tr_x: 373,
+  tr_y: 321}
+real_pts: {bl_x: 453, bl_y: 428, br_x: 558, br_y: 428, tl_x: 454, tl_y: 281, tr_x: 559,
+  tr_y: 281}
+resolution: 0.0051428571428571426

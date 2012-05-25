@@ -1,7 +1,9 @@
-#include "naive.hpp"
+#include <ros/ros.h>
+#include <sensor_msgs/LaserScan.h>
 #include <stdint.h>
 #include <iostream>
 #include <vector>
+#include "naive.hpp"
 
 using namespace cv;
 
@@ -88,136 +90,48 @@ void segment(Mat* in, Mat* out){
     optimumThreshold(&mixed, out, 127);
 }
 
-/*
-int test_pixel(IplImage* in, int x, int y){
-    if(x < 0 || x >= in->width){
-        //printf("%d, %d, x\n", x, y);
-        return 0;
-    }
-    if(y < 0 || y >= in->height){
-        //printf("%d, %d, y\n", x, y);
-        return 0;
-    }else
-        return ((unsigned char*) &(in->imageData[y*in->width]))[x];
-}
+void raycast(Mat* in, sensor_msgs::LaserScan& scan){
+    ros::Time scan_time = ros::Time::now();
+    const int res = 180;
 
-void set_pixel(IplImage* in, int x, int y, int value){
-    ((unsigned char*) &(in->imageData[y*in->width]))[x] = value;
-}
+    scan.header.stamp = scan_time;
+    scan.header.frame_id = "vision_scan";
+    scan.angle_min = 0; //assume scanning from 0->180
+    scan.angle_max = M_PI;
+    scan.angle_increment = M_PI / res;
+    scan.time_increment = (1 / 60) / res;
+    scan.range_min = 0.0;
+    scan.range_max = RANGE;
 
+    scan.set_ranges_size(res);
+    scan.set_intensities_size(res);
 
-//cast rays from the center of the bottom out. the first
-//white pixel the ray hits turns into a white pixel in the
-//output image
-void raycast(IplImage* in, IplImage* out){
+    //build dataset
     double theta;
-    int i = (in->width-1) / 2;
-    int j = (in->height-1);
-    int x, y;
+    int i = (in->cols-1) / 2; //scan from center of bottom
+    int j = (in->rows-1);
+    int k = 0;
 
-    //for(theta = (3.0/2.0) * M_PI; theta > M_PI / 2.0; theta -= M_PI / 180){
-    for(theta = 2.0 * M_PI; theta > M_PI ; theta -= M_PI / 180){
-        ray(in, i, j, theta, &x, &y);
-        if(x != 0 && y != 0)
-            set_pixel(out, x, y, 255);
-    }
+    for(theta = 2.0 * M_PI; theta > M_PI; theta -= M_PI / res){
+        scan.ranges[k++] = ray(in, i, j, theta);
+    }   
+
 }
 
-
-//ii and jj will contain the coordinates of a hit, 0, 0 if no hits
-//in range
-void ray(IplImage* in, int i, int j, double theta, int* ii, int* jj){
-    double x = cos(theta); 
+float ray(Mat* in, int i, int j, double theta){
+    double x = cos(theta);
     double y = sin(theta);
     int h;
     int xx, yy;
 
-    *ii = *jj = 0;
-
     for(h = 1; h < RANGE * PPM; h++){
         xx = floor(i+(x*h));
         yy = floor(j+(y*h));
-        if(test_pixel(in, xx, yy)){
-            *ii = xx;
-            *jj = yy;
-            break;
-        }
-    }
-}
-
-//value of pixel at end of bersenham's march
-int bersenham(IplImage* in, int i0, int j0, int i1, int j1){
-    char steep;
-    int t;
-    int dx;
-    int dy;
-    double err = 0;
-    double derr;
-    int ystep;
-    int x, y;
-
-    steep = abs(j1 - j0) > abs(i1 - i0);
-    if(steep != 0){
-        t = i0;
-        i0 = j0;
-        j0 = t;
-        
-        t = i1;
-        i1 = j1;
-        j1 = t;
-    }    
-
-    if(i0 > i1){
-        t = i0;
-        i0 = i1;
-        i1 = t;
-
-        t = j0;
-        j0 = j1;
-        j1 = t;
-    }
-
-    dx = i1 - i0;
-    dy = abs(j1 - j0);
-    derr = dy / dx;
     
-    y = j0;
-    ystep = (j0 < j1) ? 1 : -1;
-
-    for(x=i0; x<i1; x++){
-        //if steep:
-        //set_pixel(in, x, y, 255);
-        //else:
-        //set_pixel(in, y, x, 255);
-        err += derr;
-        if(err >= 0.5){
-            y += ystep;
-            err -= 1.0;
-        }
+        if(in->at<uint8_t>(xx,yy) != 0)
+            return (float) h / PPM;
     }
 
-    return test_pixel(in, x, y);
+    //else return max range
+    return RANGE;
 }
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

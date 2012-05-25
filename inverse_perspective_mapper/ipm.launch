@@ -1,0 +1,38 @@
+<launch>
+<!--
+  <group ns="camera">
+    <node name="camera_node" pkg="uvc_camera" type="camera_node">
+      <param name="device" value="/dev/video0"/>
+      <param name="camera_info_url"
+           value="file://$(find inverse_perspective_mapper)/params/calibration_ps3eye_left.yaml"/>
+    </node>
+  </group>
+-->
+
+  <node name="ipm_node" pkg="inverse_perspective_mapper" type="ipm_node.py">
+      <param name="image_in_topic" type="str" value="/cam"/>
+      <param name="image_out_topic" type="str" value="/cam_ipm"/>
+
+      <!-- calibration settings 
+           uncomment to re-generate transform_map.yaml -->
+
+      <param name="checkers_wide" type="int" value="7"/>
+      <param name="checkers_tall" type="int" value="10"/>
+      <param name="checker_width" type="double" value="0.074"/>
+      <param name="save_transform_map" 
+          value="$(find inverse_perspective_mapper)/params/transform_map.yaml"/>
+
+<!--
+      <param name="load_transform_map" 
+          value="$(find inverse_perspective_mapper)/params/transform_map.yaml"/>
+-->
+
+      <param name="camera_depth" type="double" value="0.1"/>
+      <param name="camera_width" type="double" value="2.0"/>
+
+      <param name="frame_skip" type="int" value="5"/>
+
+      <param name="show_windows" type="bool" value="true"/>
+  </node>
+
+</launch>

@@ -13,41 +13,50 @@ class DetectLines {
     ros::NodeHandle n;
     image_transport::ImageTransport it;
     image_transport::Subscriber it_sub;
+    image_transport::Publisher it_pub;
 
 public:
     DetectLines() : it(n){
         it_sub = it.subscribe("cam", 1, &DetectLines::got_frame, this);
-        cv::namedWindow("in");
-        cv::namedWindow("out");
+        it_pub = it.advertise("cam_segment", 1);
+        //cv::namedWindow("in");
+        //cv::namedWindow("out");
     }
 
     ~DetectLines(){
-        cv::destroyWindow("in");
-        cv::destroyWindow("out");
+        //cv::destroyWindow("in");
+        //cv::destroyWindow("out");
     }
 
     void got_frame(const sensor_msgs::ImageConstPtr& msg){
         cv_bridge::CvImagePtr frame;
+        cv_bridge::CvImage out_topic;
 
         //bridge
         try{
             frame = cv_bridge::toCvCopy(msg, enc::BGR8);
         }catch(cv_bridge::Exception &e){
-            //ROS_ERROR("kec_line exception: %s", e.what());
-            std::cout << "kec_line exception: " << e.what() << std::endl;
+            ROS_ERROR("kec_line exception: %s", e.what());
+            //std::cout << "kec_line exception: " << e.what() << std::endl;
             return;
         }
 
         cv::Mat out(frame->image.rows, frame->image.cols, CV_8UC1);
-
+        
         //lineDetect(frame->image, &iplout);
         segment(&frame->image, &out);
 
         //show image
-        cv::imshow("in", frame->image);
-        cv::imshow("out", out);
-        cv::waitKey(1);
-        out.release();
+        //cv::imshow("in", frame->image);
+        //cv::imshow("out", out);
+        //cv::waitKey(1);
+
+        out_topic.header = frame->header;
+        out_topic.encoding = enc::TYPE_8UC1;
+        out_topic.image = out;
+        
+        it_pub.publish(out_topic.toImageMsg());
+        //out.release();
     }
 };
 
