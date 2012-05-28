@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     
     ros::Subscriber laserSub = nh.subscribe("input", 1, laserCallback);
     
-    ros::Publisher laserMapPub_ = nh.advertise<nav_msgs::OccupancyGrid>("output", 0);
+    ros::Publisher laserMapPub_ = nh.advertise<nav_msgs::OccupancyGrid>("output", 1);
     laserMapPub = &laserMapPub_;
     
     tfListener = new tf::TransformListener();

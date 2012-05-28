@@ -11,38 +11,36 @@
 #include "pathfinder.hpp"
 
 void goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg);
-void laserMapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
+void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 
 tf::TransformListener* tfListener;
 nav_msgs::OccupancyGrid* laserGrid;
-std::vector<nav_msgs::OccupancyGrid> maps;
+nav_msgs::OccupancyGrid map;
 Pathfinder* pather;
-bool gotLaserMap = false;
+bool gotMap = false;
 
 int main(int argc, char* argv[])
 {
     ros::init(argc, argv, "Navi2");
     ros::NodeHandle nh;
     
-    ros::Subscriber laserMapSub = nh.subscribe<nav_msgs::OccupancyGrid>("laserMap", 1, laserMapCallback);
-    maps.push_back(nav_msgs::OccupancyGrid());
+    ros::Subscriber mapSub = nh.subscribe<nav_msgs::OccupancyGrid>("inputMap", 1, mapCallback);
     
-    ros::Subscriber goalSub = nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, goalCallback);
+    ros::Subscriber goalSub = nh.subscribe<geometry_msgs::PoseStamped>("inputGoal", 1, goalCallback);
     
-    ros::Publisher pathPub = nh.advertise<nav_msgs::Path>("path", 1);
+    ros::Publisher pathPub = nh.advertise<nav_msgs::Path>("output", 1);
     
     tfListener = new tf::TransformListener();
     
     pather = new Pathfinder(nh);
-    pather->SetTarget(0.0, 0.0);
     
-    while (true)
+    while (ros::ok())
     {
         ros::spinOnce();
         
-        if (gotLaserMap)
+        if (gotMap)
         {
-            pathPub.publish(pather->MakePath(maps));
+            pathPub.publish(pather->MakePath(map));
         }
     }
 }
@@ -52,8 +50,8 @@ void goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
     pather->SetTarget(msg->pose.position.x, msg->pose.position.y);
 }
 
-void laserMapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
+void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-    gotLaserMap = true;
-    maps[0] = (*msg);
+    gotMap = true;
+    map = (*msg);
 }
