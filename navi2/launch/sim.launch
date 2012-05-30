@@ -1,11 +1,36 @@
 <!-- -*- xml -*- -->
 <launch>
     <param name="/use_sim_time" value="true"/>
+    
     <node name="stage" pkg="stage" type="stageros" required="true" ns="robot"
           args="$(find uml_igvc_stage)/share/aut1.world" />
     <node name="sim_gps" pkg="uml_sim_gps" type="sim_gps.py" args="-s" />
+    
     <group ns="robot">
         <node name="GST" pkg="uml_sim_gps" type="gpsStageTransformer" />
-        <!--node name="navi2" pkg="navi2" type="navi2" /-->
+        
+        <node name="LaserMap" pkg="navi2" type="laserMapper">
+            <remap from="input" to="base_scan"/>
+            <remap from="output" to="laserMap"/>
+            <rosparam command="load" file="$(find navi2)/laserMap.yaml"/>
+        </node>
+        
+        <node name="LaserMap2" pkg="navi2" type="laserMapper">
+            <remap from="input" to="base_scan"/>
+            <remap from="output" to="laserMap2"/>
+            <rosparam command="load" file="$(find navi2)/laserMap.yaml"/>
+        </node>
+        
+        <node name="MapMerger" pkg="navi2" type="mapMerger">
+            <remap from="output" to="mergedMap"/>
+            <rosparam param="inputTopics">['laserMap', 'laserMap2']</rosparam>
+        </node>
+        
+        <node name="navi2" pkg="navi2" type="navi2">
+            <remap from="inputMap" to="mergedMap"/>
+            <remap from="inputGoal" to="goal"/>
+            <remap from="output" to="localPath"/>
+            <rosparam command="load" file="$(find navi2)/navi2.yaml"/>
+        </node>
     </group>
 </launch>

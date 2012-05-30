@@ -1,5 +1,5 @@
 <launch>
-   <node pkg="os5000" type="osdriver.py" name="osdriver" 
+   <node pkg="ocean_driver" type="osdriver.py" name="osdriver" 
             output="screen" respawn="true" />
 
     <node pkg="stark_driver" type="pose_driver" name="pose_driver"

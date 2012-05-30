@@ -1,0 +1,20 @@
+<package>
+  <description brief="inverse_perspective_mapper">
+
+     inverse_perspective_mapper
+
+    creates an opencv image of a "birdseye" view given a checkerboard for calibration
+
+  </description>
+  <author>Jeff Rousseau</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/inverse_perspective_mapper</url>
+
+  <depend package="rospy"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+
+</package>
+
+

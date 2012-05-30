@@ -1,6 +1,8 @@
 #include <queue>
 #include <vector>
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include "std_msgs/ColorRGBA.h"
 #include "nav_msgs/OccupancyGrid.h"
 #include "nav_msgs/Path.h"
@@ -43,7 +45,7 @@ public:
     Pathfinder(ros::NodeHandle& nh);
     
     void SetTarget(double xt, double yt);
-    nav_msgs::Path MakePath(std::vector<nav_msgs::OccupancyGrid>& maps);
+    nav_msgs::Path MakePath(nav_msgs::OccupancyGrid& map);
     nav_msgs::Path GetLastPath();
     
 protected:
@@ -51,8 +53,8 @@ protected:
     ros::NodeHandle &m_nh;
     ros::Publisher m_debug;
     
-    bool At(std::vector<nav_msgs::OccupancyGrid>& maps, int x, int y);
-    bool LOS(std::vector<nav_msgs::OccupancyGrid>& maps, SearchNode* a, SearchNode* b);
+    bool At(nav_msgs::OccupancyGrid& map, int x, int y);
+    bool LOS(nav_msgs::OccupancyGrid& map, SearchNode* a, SearchNode* b);
     
     void RedDebugLine(visualization_msgs::MarkerArray& markers, SearchNode* a, SearchNode* b, double res);
     void GreenDebugLine(visualization_msgs::MarkerArray& markers, SearchNode* a, SearchNode* b, double res);
