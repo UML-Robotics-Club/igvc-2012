@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/topLayout"
+    	android:layout_width="fill_parent" android:layout_height="fill_parent"
+    	android:weightSum="10" android:orientation="horizontal">
+	<FrameLayout android:layout_width="wrap_content" android:layout_height="fill_parent"
+			android:layout_weight="4">
+	    <TextView android:id="@+id/statusText" android:text="Starting up..." 
+    		android:textSize="12pt" android:background="#000"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:padding="16dp"  android:layout_gravity="center_horizontal|top" />
+	</FrameLayout>
+	<FrameLayout android:layout_width="wrap_content" android:layout_height="fill_parent"
+			android:layout_weight="6">
+		<ImageView android:id="@+id/bgImage" android:src="@drawable/background"	
+			android:layout_width="fill_parent" android:layout_height="fill_parent" />
+	</FrameLayout>
+</LinearLayout>
