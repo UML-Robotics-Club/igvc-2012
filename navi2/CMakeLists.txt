@@ -7,7 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE Debug)
+set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 
@@ -28,4 +28,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 rosbuild_add_executable(navi2 src/navi2.cpp src/pathfinder.cpp src/pathfinder.hpp)
 rosbuild_add_executable(demo src/demo.cpp)
+rosbuild_add_executable(laserMapper src/laserMapper.cpp)
+rosbuild_add_executable(mapMerger src/mapMerger.cpp)
 #target_link_libraries(example ${PROJECT_NAME})

@@ -35,7 +35,7 @@ Pathfinder::Pathfinder(ros::NodeHandle& nh) : m_nh(nh)
  
     m_debug = nh.advertise<visualization_msgs::MarkerArray>("path_debug", 1);
     
-    ros::param::param<double>("~pathfinderTolerance", m_tolerance, 0.4);
+    ros::param::param<double>("~pathfinderTolerance", m_tolerance, 1.5);
 }
 
 void Pathfinder::SetTarget(double xt, double yt)
@@ -44,9 +44,9 @@ void Pathfinder::SetTarget(double xt, double yt)
     m_yt = yt;
 }
 
-nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
+nav_msgs::Path Pathfinder::MakePath(nav_msgs::OccupancyGrid& map)
 {
-    SearchNodeCmp::SetTarget(m_xt / maps.front().info.resolution, m_yt / maps.front().info.resolution);
+    SearchNodeCmp::SetTarget(m_xt / map.info.resolution, m_yt / map.info.resolution);
     std::priority_queue<SearchNode*, std::vector<SearchNode*>, SearchNodeCmp> queue;
     
     tf::StampedTransform transform;
@@ -62,21 +62,21 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         ROS_ERROR("%s",ex.what());
     }
     
-    m_searchmap = new SearchNode[maps.front().info.height * maps.front().info.width];
-    for (unsigned int y = 0; y < maps.front().info.height; ++y)
+    m_searchmap = new SearchNode[map.info.height * map.info.width];
+    for (unsigned int y = 0; y < map.info.height; ++y)
     {
-        for (unsigned int x = 0; x < maps.front().info.width; ++x)
+        for (unsigned int x = 0; x < map.info.width; ++x)
         {
-            m_searchmap[y * maps.front().info.width + x].m_x = x;
-            m_searchmap[y * maps.front().info.width + x].m_y = y;
+            m_searchmap[y * map.info.width + x].m_x = x;
+            m_searchmap[y * map.info.width + x].m_y = y;
         }
     }
     
-    int xx = transform.getOrigin().x() / maps.front().info.resolution;
-    int yy = transform.getOrigin().y() / maps.front().info.resolution;
+    int xx = transform.getOrigin().x() / map.info.resolution;
+    int yy = transform.getOrigin().y() / map.info.resolution;
     
     /* Should get current vel */
-    queue.push(&(m_searchmap[yy * maps.front().info.width + xx]));
+    queue.push(&(m_searchmap[yy * map.info.width + xx]));
     queue.top()->m_cost = 0;
     queue.top()->m_parent = HOME_NODE;
     
@@ -84,13 +84,13 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
     ROS_INFO("TARGE (FL): %lf, %lf", m_xt, m_yt);
     
     ROS_INFO("NODE DETAILS: %d %d %lf", 
-             m_searchmap[yy * maps.front().info.width + xx].m_x,
-             m_searchmap[yy * maps.front().info.width + xx].m_y,
-             m_searchmap[yy * maps.front().info.width + xx].m_cost);
+             m_searchmap[yy * map.info.width + xx].m_x,
+             m_searchmap[yy * map.info.width + xx].m_y,
+             m_searchmap[yy * map.info.width + xx].m_cost);
     
     visualization_msgs::MarkerArray markers;
     
-    {
+    /*{
         //Red Lines
         visualization_msgs::Marker mark;
         
@@ -99,7 +99,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         mark.action = visualization_msgs::Marker::ADD;
         mark.ns = "Failed_LOS";
         mark.id = 1;
-        mark.type = visualization_msgs::Marker::LINE_STRIP;
+        mark.type = visualization_msgs::Marker::LINE_LIST;
         mark.lifetime = ros::Duration();
         
         mark.scale.x = 0.01;
@@ -125,7 +125,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         mark.action = visualization_msgs::Marker::ADD;
         mark.ns = "Passed_LOS";
         mark.id = 1;
-        mark.type = visualization_msgs::Marker::LINE_STRIP;
+        mark.type = visualization_msgs::Marker::LINE_LIST;
         mark.lifetime = ros::Duration();
         
         mark.scale.x = 0.01;
@@ -140,7 +140,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         mark.color.b = 0.0;
         mark.color.a = 1.0;   
         markers.markers.push_back(mark);
-    }
+    }*/
     
     while (!queue.empty() && queue.size() < 500000)
     {
@@ -148,27 +148,25 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
         SearchNode* cur = queue.top();
         queue.pop();
         
-        
-        markers.markers.push_back(DebugArrow(cur, maps.front().info.resolution));
+        //markers.markers.push_back(DebugArrow(cur, map.info.resolution));
         
         //ROS_INFO("NODE(%d): %lf, %lf", queue.size(), cur->m_x, cur->m_y);
         
-        if (hypot(cur->m_x - m_xt / maps.front().info.resolution, 
-                  cur->m_y - m_yt / maps.front().info.resolution) <= m_tolerance)
+        if (hypot(cur->m_x - m_xt / map.info.resolution, 
+                  cur->m_y - m_yt / map.info.resolution) <= m_tolerance)
         {
-            ROS_INFO("DONE");
+            //Done - Assemble Path
             
             m_lastPath = nav_msgs::Path();
             m_lastPath.header.frame_id = "/map";
             
             while (cur != HOME_NODE)
             {
-                ROS_INFO("AS:%d %d-%d", m_lastPath.poses.size(), cur->m_x, cur->m_y);
                 geometry_msgs::PoseStamped pose;
                 
                 pose.header.frame_id = "/map";
-                pose.pose.position.x = cur->m_x * maps.front().info.resolution;
-                pose.pose.position.y = cur->m_y * maps.front().info.resolution;
+                pose.pose.position.x = cur->m_x * map.info.resolution;
+                pose.pose.position.y = cur->m_y * map.info.resolution;
                 
                 double yaw = 0;
                 
@@ -214,21 +212,21 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                         nx = mx + xmod;
                         ny = my + ymod;
                         
-                        if (At(maps, nx, ny)) 
+                        if (At(map, nx, ny)) 
                         {
-                            nxt = &(m_searchmap[ny * maps.front().info.width + nx]);
+                            nxt = &(m_searchmap[ny * map.info.width + nx]);
                             
                             if (nxt->m_parent == NULL || (nxt->m_parent != HOME_NODE && nxt->m_parent->m_cost > cur->m_cost))
                             {
                                 
-                                if (cur->m_parent > HOME_NODE && LOS(maps, cur->m_parent, nxt))
+                                if (cur->m_parent > HOME_NODE && LOS(map, cur->m_parent, nxt))
                                 {
                                     nxt->m_cost = cur->m_parent->m_cost + hypot(nxt->m_x - cur->m_parent->m_x, 
                                                                                 nxt->m_y - cur->m_parent->m_y);
                                     nxt->m_parent = cur->m_parent;
                                     
                                     //Viz Passed checks
-                                    GreenDebugLine(markers, cur->m_parent, nxt, maps.front().info.resolution);
+                                    //GreenDebugLine(markers, cur->m_parent, nxt, map.info.resolution);
                                     
                                 }
                                 else
@@ -240,7 +238,7 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                                     if (cur->m_parent > HOME_NODE)
                                     {
                                         //Viz Failed checks
-                                        RedDebugLine(markers, cur->m_parent, nxt, maps.front().info.resolution);
+                                        //RedDebugLine(markers, cur->m_parent, nxt, map.info.resolution);
                                     }
                                 }
                                 
@@ -251,15 +249,6 @@ nav_msgs::Path Pathfinder::MakePath(std::vector<nav_msgs::OccupancyGrid>& maps)
                 }
             }
         }
-    }
-    
-    if (queue.size() >= 500000)
-    {
-        ROS_INFO("TERMINATED DUE TO # OF NODES");
-    }
-    else
-    {
-        ROS_INFO("TERMINATED DUE TO FAIL");
     }
     
     m_debug.publish(markers);
@@ -274,27 +263,18 @@ nav_msgs::Path Pathfinder::GetLastPath()
     return m_lastPath;
 }
 
-bool Pathfinder::At(std::vector<nav_msgs::OccupancyGrid>& maps, int x, int y)
+bool Pathfinder::At(nav_msgs::OccupancyGrid& map, int x, int y)
 {
-    signed char val = -1;
+    if ((x >= 0) && (x < (int)(map.info.width)) && 
+        (y >= 0) && (y < (int)(map.info.height)))
+    {
+        return map.data[x + y * map.info.width] < 50;
+    }
     
-    if ((x >= 0) && (x < (int)(maps.front().info.width)) && 
-        (y >= 0) && (y < (int)(maps.front().info.height)))
-    {
-        for (std::vector<nav_msgs::OccupancyGrid>::iterator i = maps.begin(); i != maps.end(); i++)
-        {   
-            val = val < i->data[x + y * i->info.width] ? i->data[x + y * i->info.width] : val;
-        }
-    }
-    else
-    {
-        return false;
-    }
-
-    return val < 50;
+    return false;
 }
 
-bool Pathfinder::LOS(std::vector<nav_msgs::OccupancyGrid>& maps, SearchNode* a, SearchNode* b)
+bool Pathfinder::LOS(nav_msgs::OccupancyGrid& map, SearchNode* a, SearchNode* b)
 {
     double yaw = atan2(b->m_y - a->m_y, b->m_x - a->m_x);
     double xInc = cos(yaw), yInc = sin(yaw);
@@ -302,7 +282,7 @@ bool Pathfinder::LOS(std::vector<nav_msgs::OccupancyGrid>& maps, SearchNode* a, 
     
     for (int len = 0; len < hypot(a->m_x - b->m_x, a->m_y - b->m_y); len++)
     {
-        if (At(maps, (int)xx, (int)yy))
+        if (At(map, (int)xx, (int)yy))
         {
             xx += xInc;
             yy += yInc;
@@ -386,8 +366,8 @@ visualization_msgs::Marker Pathfinder::DebugArrow(SearchNode* a, double res)
     
     if (a->m_parent > HOME_NODE)
     {
-        yaw = atan2(a->m_parent->m_y - a->m_y,
-                    a->m_parent->m_x - a->m_x);
+        yaw = atan2(a->m_y - a->m_parent->m_y,
+                    a->m_x - a->m_parent->m_x);
     }
     
     tf::Quaternion quat;
@@ -405,6 +385,32 @@ visualization_msgs::Marker Pathfinder::DebugArrow(SearchNode* a, double res)
     mark.color.g = 0.0;
     mark.color.b = 1.0;
     mark.color.a = 1.0;
+    
+    /*std::stringstream ss;
+    
+    m_count++;
+    ss << std::setprecision(2) << hypot(a->m_x - m_xt / res, a->m_y - m_yt / res);
+    
+    mark.header.stamp = ros::Time::now();
+    mark.header.frame_id = "/map";
+    mark.action = visualization_msgs::Marker::ADD;
+    mark.ns = "Expansion";
+    mark.id = a->m_x + 500 * a->m_y;
+    mark.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    mark.lifetime = ros::Duration(1.0);
+    
+    mark.text = ss.str();
+    
+    mark.scale.z = res / 3.5;
+    mark.pose.orientation.w = 1.0;
+    
+    mark.pose.position.x = a->m_x * res;
+    mark.pose.position.y = a->m_y * res;
+    
+    mark.color.r = 0.0;
+    mark.color.g = 0.0;
+    mark.color.b = 1.0;
+    mark.color.a = 1.0;*/
     
     return mark;
 }
