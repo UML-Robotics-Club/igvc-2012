@@ -40,6 +40,8 @@ def set_speeds(speed, rotsp):
     msg.angular.z = float(rotsp)
     cmd_vel.publish(msg)
 
+    print "Speeds:", speed, rotsp
+
 def send_tickets():
     while True:
         if time.time() - client['stamp'] > COMMAND_TIMEOUT:
