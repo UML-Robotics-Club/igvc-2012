@@ -20,6 +20,7 @@ class Bird {
 public:
     Bird() : it(n){
         it_sub = it.subscribe("cam_segment", 1, &Bird::got_frame, this);
+        //it_sub = it.subscribe("cam", 1, &Bird::got_frame, this);
         it_pub = it.advertise("cam_bird", 1);
 
         //read in homography matrix
@@ -52,12 +53,14 @@ public:
         //bridge
         try{
             frame = cv_bridge::toCvCopy(msg, enc::TYPE_8UC1);
+            //frame = cv_bridge::toCvCopy(msg, enc::BGR8);
         }catch(cv_bridge::Exception &e){
             ROS_ERROR("bird exception: %s", e.what());
             return;
         }
 
         cv::Mat out(frame->image.rows, frame->image.cols, CV_8UC1);
+        //cv::Mat out(frame->image.rows, frame->image.cols, CV_8UC3);
 
         //out = frame->image.clone();
 
@@ -71,6 +74,7 @@ public:
         
         out_topic.header = frame->header;
         out_topic.encoding = enc::TYPE_8UC1;
+        //out_topic.encoding = enc::BGR8;
         out_topic.image = out;
         
         it_pub.publish(out_topic.toImageMsg());

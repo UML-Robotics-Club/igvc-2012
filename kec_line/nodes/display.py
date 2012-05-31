@@ -18,6 +18,6 @@ def got_frame(frame):
     cv.WaitKey(10)
 
 #cv.DestroyAllWindows()
-rospy.Subscriber('cam', Image, got_frame)
+rospy.Subscriber('cam', Image, got_frame, queue_size=1)
 rospy.spin()
 

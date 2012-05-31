@@ -12,11 +12,14 @@ from cv_bridge import CvBridge, CvBridgeError
 
 pub = rospy.Publisher('cam', Image)
 rospy.init_node('camera_driver')
-cam = cv.CaptureFromCAM(200)
+cam = cv.CaptureFromCAM(201)
 bridge = CvBridge()
 
+#r = rospy.Rate(1) #run the camera at 10Hz to mimic laser
 while not rospy.is_shutdown():
     frame = cv.QueryFrame(cam)
+    print frame.width, frame.height
     pub.publish(bridge.cv_to_imgmsg(frame, "bgr8"))
-    cv.WaitKey(10)
+    #r.sleep()
+    #cv.WaitKey(10)
 

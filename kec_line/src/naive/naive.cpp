@@ -92,15 +92,15 @@ void segment(Mat* in, Mat* out){
 
 void raycast(Mat* in, sensor_msgs::LaserScan& scan){
     ros::Time scan_time = ros::Time::now();
-    const int res = 180;
+    const int res = SCAN_RES;
 
     scan.header.stamp = scan_time;
-    scan.header.frame_id = "vision_scan";
+    scan.header.frame_id = "lase_link";
     scan.angle_min = 0; //assume scanning from 0->180
     scan.angle_max = M_PI;
     scan.angle_increment = M_PI / res;
     scan.time_increment = (1 / 60) / res;
-    scan.range_min = 0.0;
+    scan.range_min = RANGE_MIN;
     scan.range_max = RANGE;
 
     scan.set_ranges_size(res);
@@ -108,12 +108,16 @@ void raycast(Mat* in, sensor_msgs::LaserScan& scan){
 
     //build dataset
     double theta;
-    int i = (in->cols-1) / 2; //scan from center of bottom
-    int j = (in->rows-1);
+    //int i = (in->cols-1) / 2; //scan from center of bottom
+    //int j = (in->rows-1);
+    int i = ORIGIN_X;
+    int j = ORIGIN_Y;
     int k = 0;
 
     for(theta = 2.0 * M_PI; theta > M_PI; theta -= M_PI / res){
-        scan.ranges[k++] = ray(in, i, j, theta);
+        scan.ranges[k] = ray(in, i, j, theta);
+        scan.ranges[k] += (scan.ranges[k] < 5.0 - RANGE_MIN) ? RANGE_MIN : 0;
+        k++;
     }   
 
 }
