@@ -1,0 +1,18 @@
+<package>
+  <description brief="stark_frames">
+
+     stark_frames
+
+  </description>
+  <author>stark</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/stark_frames</url>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="rospy"/>
+  <depend package="stark_driver"/>
+
+</package>
+
+
