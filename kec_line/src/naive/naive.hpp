@@ -7,8 +7,12 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <cmath>
 
-#define RANGE   5.0
-#define PPM     75.0
+#define RANGE       5.0
+#define RANGE_MIN   0.46
+#define SCAN_RES    180
+#define PPM         20.0
+#define ORIGIN_X    209
+#define ORIGIN_Y    467
 
 /*
 //pixel
