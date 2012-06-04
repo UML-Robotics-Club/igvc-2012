@@ -10,9 +10,9 @@
 #define RANGE       5.0
 #define RANGE_MIN   0.46
 #define SCAN_RES    180
-#define PPM         20.0
-#define ORIGIN_X    209
-#define ORIGIN_Y    467
+#define PPM         100.0
+#define ORIGIN_X    191
+#define ORIGIN_Y    479
 
 /*
 //pixel
