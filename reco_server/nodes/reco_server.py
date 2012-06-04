@@ -21,9 +21,13 @@ from sensor_msgs.msg import NavSatFix
 
 import woah
 
-client  = { 'addr' : None,
+client  = { 'addr': None,
            'sock' : None,
            'stamp': 0.0 }
+
+command = { 'woah': False,
+           'speed': 0.0,
+           'theta': 0.0 }
 
 cond    = threading.Condition(threading.Lock())
 
@@ -41,6 +45,10 @@ def set_speeds(speed, rotsp):
     cmd_vel.publish(msg)
 
     print "Speeds:", speed, rotsp
+
+def set_woah_goal(speed, theta):
+    command['speed'] = speed
+    command['theta'] = theta
 
 def send_tickets():
     while True:
@@ -64,9 +72,22 @@ def got_command(data):
     cmd = data.split(" ")
 
     if cmd[0] == 'speed':
+        command['woah'] = False
         set_speeds(cmd[1], cmd[2])
+    if cmd[0] == 'woah':
+        command['woah'] = True
+        set_woah_goal(cmd[1], cmd[2])
     else:
         print "Unknown command:", data
+
+def got_scan(msg):
+    age = time.time() - client['stamp']
+    if command['woah'] and age < COMMAND_TIMEOUT:
+        (sp, tu) = woah.woah_ahead(
+            command['theta'], command['speed'], msg)
+        set_speeds(sp, tu)
+
+    
 
 class PacketHandler(SocketServer.BaseRequestHandler):
     def handle(self):
@@ -87,12 +108,15 @@ class PacketHandler(SocketServer.BaseRequestHandler):
 
         (ticket_s, body) =  self.request[0].split(";", 1)
         ticket = float(ticket_s)
-        
-        if time.time() - ticket < COMMAND_TIMEOUT:
+
+        age = time.time() - ticket
+        if age < COMMAND_TIMEOUT and age > 0.0:
             got_command(body)
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, lambda _a, _b: os._exit(0))
+
+    rospy.Subscribe("/robot/base_scan", LaserScan, got_scan)
 
     tthr = threading.Thread(target=send_tickets)
     tthr.start()
