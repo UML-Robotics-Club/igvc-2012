@@ -52,6 +52,11 @@ public class StatusView extends View {
 			float dx = xx - 0.5f;
 			float dy = yy - 0.5f;
 			
+			if (Math.abs(dx) < 0.05f)
+				dx = 0.0f;
+			if (Math.abs(dy) < 0.05f)
+				dy = 0.0f;
+			
 			float speed = maxSpeed * (2.0f * -dy);
 			float rotsp = maxRotsp * (2.0f * -dx);
 			
@@ -81,6 +86,8 @@ public class StatusView extends View {
 		// Draw the robot.
 		paint.setColor(Color.WHITE);
 		canvas.drawCircle(0.5f, 0.5f, 0.1f, paint);
+		paint.setColor(Color.GRAY);
+		canvas.drawCircle(0.5f, 0.5f, 0.05f, paint);
 
 		Log.v(TAG, "onDraw");
 	}
