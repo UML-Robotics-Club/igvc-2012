@@ -28,6 +28,7 @@ using namespace cv;
 int avgValue(Mat* in);
 void optimumThreshold(Mat* in, Mat* out, int t);
 void segment(Mat* in, Mat* out);
+void sexysegment(Mat* in, Mat* out);
 
 //raycast
 float ray(Mat* in, int i, int j, double theta);
