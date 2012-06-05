@@ -1,7 +1,6 @@
 #!/bin/bash
 
-SSID="stark-teleop"
-WLAN=wlan1
+WLAN=wlan0
 
 if [ "$USER" != "root" ]; 
 then
@@ -10,9 +9,6 @@ then
 fi
 
 nmcli dev disconnect iface $WLAN
-ifconfig $WLAN down
-ifconfig $WLAN up
-iwconfig $WLAN mode master 
-iwconfig $WLAN channel 4
-iwconfig $WLAN essid $SSID
-ifconfig $WLAN 10.0.0.1 up
+udhcpd ./udhcpd.conf &
+hostapd ./hostapd.conf &
+ifconfig wlan0 192.168.71.10 up

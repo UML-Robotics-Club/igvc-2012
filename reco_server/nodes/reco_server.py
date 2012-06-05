@@ -74,7 +74,7 @@ def got_command(data):
     if cmd[0] == 'speed':
         command['woah'] = False
         set_speeds(cmd[1], cmd[2])
-    if cmd[0] == 'woah':
+    elif cmd[0] == 'woah':
         command['woah'] = True
         set_woah_goal(cmd[1], cmd[2])
     else:
@@ -116,7 +116,7 @@ class PacketHandler(SocketServer.BaseRequestHandler):
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, lambda _a, _b: os._exit(0))
 
-    rospy.Subscribe("/robot/base_scan", LaserScan, got_scan)
+    #rospy.Subscribe("/robot/base_scan", LaserScan, got_scan)
 
     tthr = threading.Thread(target=send_tickets)
     tthr.start()
