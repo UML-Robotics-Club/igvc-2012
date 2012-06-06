@@ -8,4 +8,7 @@
    <node pkg="tf" type="static_transform_publisher" name="laser_frame"
 	args="0.75 0.0 0.0 0.0 0.0 0.0 base_link laser_link 100" 
 	output="screen" respawn="true" />
+   <node pkg="tf" type="static_transform_publisher" name="laser_frame"
+	args="0.0 0.0 0.0 0.0 0.0 0.0 base_link vision_laser_link 100" 
+	output="screen" respawn="true" />
 </launch>
