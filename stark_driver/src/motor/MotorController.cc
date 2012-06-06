@@ -83,7 +83,8 @@ MotorController::MotorController(std::string dev)
 MotorController::~MotorController()
 {
     boost::mutex::scoped_lock lock_(lock);
-    flasher_thread.interrupt();
+    //flasher_thread.interrupt();
+    set_aux(false);
     close(fd);
 }
 
@@ -276,6 +277,7 @@ void
 MotorController::toggle_light()
 {
     light_state = !light_state;
-    set_aux(light_state);
+    //set_aux(light_state);
+    set_aux(true);
 }
 

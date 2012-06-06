@@ -1,6 +1,7 @@
 <launch>
     <node pkg="sicktoolbox_wrapper" type="sicklms" name="sicklms"
             output="screen" respawn="true">
+        <param name="~frame_id" value="laser_link" />
         <remap from="scan" to="/robot/base_scan"/>
     </node>
 </launch>

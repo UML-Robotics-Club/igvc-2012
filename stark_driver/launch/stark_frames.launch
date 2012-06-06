@@ -1,0 +1,11 @@
+<launch>
+   <node pkg="stark_frames" type="map_frame.py" name="map_frame" 
+            output="screen" respawn="true" />
+   <node pkg="stark_frames" type="odom_frame.py" name="odom_frame" 
+            output="screen" respawn="true" />
+   <node pkg="stark_frames" type="base_frame.py" name="base_frame" 
+            output="screen" respawn="true" />
+   <node pkg="tf" type="static_transform_publisher" name="laser_frame"
+	args="0.75 0.0 0.0 0.0 0.0 0.0 base_link laser_link 100" 
+	output="screen" respawn="true" />
+</launch>
