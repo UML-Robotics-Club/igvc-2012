@@ -19,13 +19,13 @@ public:
     DetectLines() : it(n){
         it_sub = it.subscribe("cam", 1, &DetectLines::got_frame, this);
         it_pub = it.advertise("cam_segment", 1);
-        cv::namedWindow("in");
-        cv::namedWindow("out");
+        //cv::namedWindow("in");
+        //cv::namedWindow("out");
     }
 
     ~DetectLines(){
-        cv::destroyWindow("in");
-        cv::destroyWindow("out");
+        //cv::destroyWindow("in");
+        //cv::destroyWindow("out");
     }
 
     void got_frame(const sensor_msgs::ImageConstPtr& msg){
@@ -48,9 +48,9 @@ public:
         sexysegment(&frame->image, &out);
 
         //show image
-        cv::imshow("in", frame->image);
-        cv::imshow("out", out);
-        cv::waitKey(1);
+        //cv::imshow("in", frame->image);
+        //cv::imshow("out", out);
+        //cv::waitKey(1);
 
         out_topic.header = frame->header;
         out_topic.encoding = enc::TYPE_8UC1;
