@@ -17,8 +17,6 @@ def gotPath(msg):
     newPath = True
     lastPath = msg
     
-    print 'GotPath'
-    
 rospy.Subscriber('input', Path, gotPath, queue_size=1)
 
 def main():
@@ -33,9 +31,9 @@ def main():
         rate.sleep()
         
         if newPath:
-            print 'See new Path'
             modPath = lastPath
-            modPath = reduce(clearCrumb, crumbs, modPath)
+            if (len(modPath.poses) > 1):
+                modPath = reduce(clearCrumb, crumbs, modPath)
             newPath = False
             crumbs = []
         
@@ -49,9 +47,9 @@ def main():
         crumbs.append(trans)
         
         if (len(modPath.poses) > 1):
-            print 'Checking Path'
-            modPath = clearCrumb(modPath, crumb[-1])
+            modPath = clearCrumb(modPath, crumbs[-1])
             
+        if (modPath.header.frame_id != ''):
             pathPub.publish(modPath)
             
         

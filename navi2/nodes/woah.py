@@ -15,6 +15,8 @@ from std_msgs.msg import ColorRGBA
 from tf.transformations import euler_from_quaternion
 from tf.transformations import quaternion_from_euler
 
+import time
+
 rospy.init_node('woahpy')
 velPub = rospy.Publisher('output', Twist)
 markerPub = rospy.Publisher('debug', MarkerArray)
@@ -24,9 +26,9 @@ listener = tf.TransformListener()
 maxSpeed       = rospy.get_param('maxSpeed',       2.0)
 maxTurnSpeed   = rospy.get_param('maxTurnSpeed',   1.0)
 robotWidth     = rospy.get_param('robotWidth',     0.6)
-safetyMargin   = rospy.get_param('safetyMargin',   0.15)
+safetyMargin   = rospy.get_param('safetyMargin',   0.35)
 extraMargin    = rospy.get_param('extraMargin',    0.15)
-turnIntensity  = rospy.get_param('turnIntensity',  1.3)
+turnIntensity  = rospy.get_param('turnIntensity',  1.4)
 turnResistance = rospy.get_param('turnResistance', 1.7)
 minImpactTime  = rospy.get_param('minImpactTime',  1.0)
 
@@ -208,7 +210,9 @@ def gotPath(msg):
 
 def gotSense(msg):
     global lastPath, lastPose, modPath
-    
+    ##
+    clock = time.time()
+    ##
     modPath = lastPath
     
     if (len(lastPath.poses) == 0):
@@ -224,17 +228,25 @@ def gotSense(msg):
     for i in xrange(len(msg.ranges)):
         pair = (ang, r) = (msg.angle_min + float(i) * msg.angle_increment, msg.ranges[i])
         
-        if (r < msg.range_min or r > msg.range_max):
+        if (r < msg.range_min or r > msg.range_max or i % 2 == 1):
             pass
         else:
             ranges.append(pair)
-            
+    
+    ##
+    print 'Time pre-tf: ' + str(time.time() - clock)
+    ##
+    
     try:
         listener.waitForTransform("/map", msg.header.frame_id, msg.header.stamp, rospy.Duration(1.0))
         (trans,rot) = listener.lookupTransform('/map', msg.header.frame_id, msg.header.stamp)
     except (tf.LookupException, tf.ConnectivityException):
         return
-        
+    
+    ##
+    print 'Time post-tf: ' + str(time.time() - clock)
+    ##
+    
     yaw = euler_from_quaternion(rot)[2]
     
     lastPose = [trans[0], trans[1], yaw]
@@ -255,18 +267,25 @@ def gotSense(msg):
     elif goalAlpha < -math.pi:
         goalAlpha += math.pi * 2.0
     
+    ##
+    print 'Time pre-woah: ' + str(time.time() - clock)
+    ##
+    
     if (goalDist > 0.5):
         (cmd.linear.x, cmd.angular.z) = woah(goalAlpha, goalDist, len(modPath.poses) == 1, ranges, [angMin, angMax])
         
-        if (cmd.linear.x < deadband):
-            cmd.angular.z = sign(goalAlpha) * maxTurnSpeed
+        #if (cmd.linear.x < deadband):
+        #    cmd.angular.z = sign(goalAlpha) * maxTurnSpeed
         
         print ((goalAlpha, goalDist), cmd.linear.x, cmd.angular.z)
         #(cmd.linear.x, cmd.angular.z) = (0.0, 0.0)
     else:
         (cmd.linear.x, cmd.angular.z) = (0.0, 0.0)
         print "Arrived"
-
+    
+    ##
+    print 'Time post-woah: ' + str(time.time() - clock)
+    ##
     
     velPub.publish(cmd)
 
