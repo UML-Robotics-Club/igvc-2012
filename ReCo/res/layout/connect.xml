@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" >
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <TableRow>
 
         <TextView
             android:id="@+id/textView1"
@@ -10,41 +12,113 @@
             android:minHeight="0.5in"
             android:text="Connect to Robot"
             android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
+
+    <TableRow>
+
+        <Button
+            android:id="@+id/connectNowButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Connect" />
+    </TableRow>
+
+    <TableRow>
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Host" />
+    </TableRow>
+
+    <TableRow>
 
         <EditText
             android:id="@+id/editHost"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:ems="10"
-            android:text="192.168.1.42" >
-
-            <requestFocus />
+            android:singleLine="true"
+            android:text="192.168.71.10" >
         </EditText>
+    </TableRow>
+
+    <TableRow>
 
         <TextView
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Port" />
+    </TableRow>
+
+    <TableRow>
 
         <EditText
             android:id="@+id/editPort"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:ems="10"
             android:inputType="number"
+            android:singleLine="true"
             android:text="9042" />
+    </TableRow>
 
-        <Button
-            android:id="@+id/connectButton"
+    <TableRow>
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Max Speed" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Max Rotation Speed" />
+    </TableRow>
+
+    <TableRow>
+
+        <EditText
+            android:id="@+id/editMaxSpeed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="numberDecimal"
+            android:singleLine="true"
+            android:text="2.0" >
+        </EditText>
+
+        <EditText
+            android:id="@+id/editMaxRotsp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="numberDecimal"
+            android:singleLine="true"
+            android:text="1.0" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <CheckBox
+            android:id="@+id/enableDriverAssist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Connect" />
+            android:text="Driver Assist" />
+    </TableRow>
 
-    </TableLayout>
+</TableLayout>

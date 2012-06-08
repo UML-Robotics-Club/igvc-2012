@@ -99,8 +99,8 @@ def woah(goalAlpha, goalDist, goalFlag, ranges, senseBounds):
 def woah_ahead(alpha, speed, msg):
     global maxSpeed, maxTurnSpeed
 
-    maxTurnSpeed = alpha
-    maxSpeed     = speed
+    maxTurnSpeed = abs(alpha)
+    maxSpeed     = abs(speed)
 
     ranges = []
     angMin = msg.angle_max

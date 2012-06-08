@@ -31,6 +31,10 @@ public class ControlClient implements Runnable {
 	double speed = 0.0;
 	double theta = 0.0;
 	
+	String config = "";
+	float maxSp = 1.0f;
+	float maxTu = 1.0f;
+	
 	private ControlClient() {
 		try {
 			sock = new DatagramSocket();
@@ -50,25 +54,38 @@ public class ControlClient implements Runnable {
 		return singleton;
 	}
 
-	public synchronized void connect(String host, String portString) {
+	public synchronized void config(String host, String portString, String maxSpeed, String maxRotsp, boolean enAssist) {
 		try {
 			addr = InetAddress.getByName(host);
-			port = Integer.parseInt(portString); 
+			port = Integer.parseInt(portString);
 		} catch (UnknownHostException ee) {
 			Log.v(TAG, ee.toString());
 		}
+		
+		if (enAssist)
+			mode = "woah";
+		else
+			mode = "speed";
+		
+		maxSp = Float.parseFloat(maxSpeed);
+		maxTu = Float.parseFloat(maxRotsp);
+		
+		config = String.format("%s %s", maxSpeed, maxRotsp);
 	}
 	
-	public synchronized void setCommand(boolean woah, double vv, double aa) {
-		mode  = woah ? "woah" : "speed";
+	public synchronized void setCommand(double vv, double aa) {
 		speed = vv;
 		theta = aa;
 	}
 	
 	public void run() {
+		send("0.0;connect");
+		
 		while (true) {
 			String ticket = recv();
 			sendCommands(ticket);
+			if (! config.equals(""))
+				send(String.format("%s;config %s", ticket, config));
 		}
 	}
 	
@@ -79,6 +96,8 @@ public class ControlClient implements Runnable {
 	
 	private synchronized void send(String data) {
 		byte[] buffer = data.getBytes();
+		if (addr == null)
+			return;
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, addr, port);
 		try {
 			sock.send(packet);
@@ -98,5 +117,13 @@ public class ControlClient implements Runnable {
 			return "0.0";
 		}
 		return new String(buffer).split("\0")[0];
+	}
+	
+	public float getMaxSpeed() {
+		return maxSp;
+	}
+	
+	public float getMaxRotsp() {
+		return maxTu;
 	}
 }
