@@ -25,7 +25,7 @@ from math import cos
 
 conv = Proj(proj='utm',zone='19T',ellps='WGS84')
 (base_utm_e, base_utm_n) = conv(CONFIG['BASE_LON'], CONFIG['BASE_LAT'])
-(base_xx, base_yy) = (50.0, 50.0)
+(base_xx, base_yy) = (100.0, 100.0)
 
 rospy.init_node('sim_gps')
 gps = rospy.Publisher('robot/gps', NavSatFix)

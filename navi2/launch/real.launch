@@ -1,22 +1,14 @@
 <!-- -*- xml -*- -->
 <launch>
-    <param name="/use_sim_time" value="true"/>
-    
-    <node name="stage" pkg="stage" type="stageros" required="true" ns="robot"
-          args="$(find uml_igvc_stage)/share/aut1.world" />
-    <node name="sim_gps" pkg="uml_sim_gps" type="sim_gps.py" args="-s" />
-    
     <group ns="robot">
-        <node name="GST" pkg="uml_sim_gps" type="gpsStageTransformer" />
-        
         <node name="LaserMap" pkg="navi2" type="laserMapper">
             <remap from="input" to="base_scan"/>
             <remap from="output" to="laserMap"/>
             <rosparam command="load" file="$(find navi2)/laserMap.yaml"/>
         </node>
         
-        <node name="LaserMap2" pkg="navi2" type="laserMapper">
-            <remap from="input" to="base_scan"/>
+        <node name="VisionMap" pkg="navi2" type="laserMapper">
+            <remap from="input" to="cam_laser"/>
             <remap from="output" to="laserMap2"/>
             <rosparam command="load" file="$(find navi2)/laserMap.yaml"/>
         </node>
@@ -49,12 +41,6 @@
         <node name="pathFilterer" pkg="navi2" type="pathFilter.py" output="screen">
             <remap from="input" to="localPath"/>
             <remap from="output" to="FilteredLocalPath"/>
-        </node>
-        
-        <node name="woah" pkg="navi2" type="woah.py">
-            <remap from="inputPath" to="FilteredLocalPath"/>
-            <remap from="inputLaser" to="woahLaser"/>
-            <remap from="output" to="cmd_vel"/>
         </node>
     </group>
 </launch>

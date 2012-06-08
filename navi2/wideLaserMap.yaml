@@ -1,6 +1,6 @@
-##Config for laser mapper
+##Config for laser mapper (Wide)
 mapResolution: 0.2
 mapWidth: 1000
 mapHeight: 1000
 laserRange: 8.0
-inflationRadius: 0.8
+inflationRadius: 1.0

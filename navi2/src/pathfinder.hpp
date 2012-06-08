@@ -14,6 +14,8 @@
 #include "visualization_msgs/MarkerArray.h"
 #include "tf/transform_listener.h"
 
+#include "transformHelper.hpp"
+
 #define HOME_NODE (SearchNode*)3
 
 class SearchNode
