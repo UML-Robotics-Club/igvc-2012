@@ -10,6 +10,7 @@
   <url>http://ros.org/wiki/stark_frames</url>
   <depend package="std_msgs"/>
   <depend package="geometry_msgs"/>
+  <depend package="nav_msgs"/>
   <depend package="rospy"/>
   <depend package="stark_driver"/>
 

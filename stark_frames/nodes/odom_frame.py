@@ -18,7 +18,7 @@ from geometry_msgs.msg import PoseStamped
 AXLE_LENGTH = 0.6604
 WHEEL_RADIUS = 0.12065 # 9.5in diameter wheels
 WHEEL_CIRC = 2.0 * math.pi * WHEEL_RADIUS
-TWO_PI_TICKS = 5000
+TWO_PI_TICKS = 6215
 
 signal.signal(signal.SIGINT, lambda signum, stack_frame: exit(0))
 rospy.init_node("odom")
@@ -26,54 +26,17 @@ br = tf.TransformBroadcaster()
 listener = tf.TransformListener()
 
 prev_time_stamp = rospy.Time.now()
-#last_accel = (0,start_time)
-#accel_lock = threading.Lock()
-left_filter = kalman.Kalman(2,0.1, 10)
-right_filter = kalman.Kalman(2,0.1, 10)
-
-def init_filter(kal):
-    dt = 0.1
-    state = np.zeros((2,1))
-    kal.C = np.array([[1,0]])
-    update_filter(kal, dt)
-
-def update_filter(kal, dt):
-    kal.A = np.array([[1.0, dt],
-                      [0.0, 1.0]])
-    kal.B = np.array([[dt**2/2.0],
-                      [dt]])
-    
-#def handle_OS5000_msg(msg):
-#    global last_accel, accel_lock
-#    accel_lock.acquire()
-#    last_accel = (msg.accel, msg.header.stamp)
-#    accel_lock.release()
 
 def handle_encoder_msg(msg):
     global accel_lock, prev_time_stamp
     global WHEEL_CIRC, TWO_PI_TICKS
     global br
-
-    # todo: use accel in kalman filter
-    #accel_lock.acquire()
-    #accel, accel_time = copy.copy(last_accel)
-    #accel_lock.release()
     
     dt = (msg.header.stamp - prev_time_stamp).to_sec()
-    update_filter(left_filter, dt)
-    update_filter(right_filter, dt)
     left_meas_vel = msg.left_ticks * WHEEL_CIRC / TWO_PI_TICKS / dt
     right_meas_vel = msg.right_ticks * WHEEL_CIRC / TWO_PI_TICKS / dt
-    accel = 0 # delme
-    left_filter.filter(accel, left_meas_vel, dt)
-    right_filter.filter(accel, right_meas_vel, dt)
-    left_velocity = left_filter.x[1,0]
-    right_velocity = right_filter.x[1,0]
-
-    #pos, orientation = motion_model(left_velocity, right_velocity, dt)
     pos, orientation = motion_model(left_meas_vel, right_meas_vel, dt)
     br.sendTransform(pos, orientation, rospy.Time.now(), "/odom", "/gps")
-
     prev_time_stamp = msg.header.stamp
 
 # Forward kinematics for differential drive robots
@@ -118,11 +81,7 @@ def motion_model(left_vel, right_vel, dt):
         qz = 0
         qw = math.sin(theta_p/2)
     return ((x,y,0), (qx, qy, qz, qw))
-    
 
 if __name__ == '__main__':
-    init_filter(left_filter)
-    init_filter(right_filter)
-    #rospy.Subscriber("OS5000", OS5000, handle_OS5000_msg)
     rospy.Subscriber("/robot/encoder_ticks", EncoderStamped, handle_encoder_msg)
     rospy.spin()

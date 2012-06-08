@@ -4,16 +4,16 @@ import roslib
 roslib.load_manifest('stark_frames')
 import rospy
 import tf
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import Pose2D
+import math
 
-def handle_gps_msg(msg):
-    x = msg.pose.position.x
-    y = msg.pose.position.y
-    qx = msg.pose.orientation.x
-    qy = msg.pose.orientation.y
-    qz = msg.pose.orientation.z
-    qw = msg.pose.orientation.w
-
+def handle_pose_msg(msg):
+    x = msg.x
+    y = msg.y
+    qx = math.cos(msg.theta/2.0)
+    qy = 0
+    qz = 0
+    qw = math.sin(msg.theta/2.0)
     br = tf.TransformBroadcaster()
     br.sendTransform((x,y,0), 
                      (qx,qy,qz,qw),
@@ -23,5 +23,5 @@ def handle_gps_msg(msg):
 
 if __name__ == '__main__':
     rospy.init_node("map_node")
-    rospy.Subscriber("imu_pose", PoseStamped, handle_gps_msg)
+    rospy.Subscriber("/robot/pose2d", Pose2D, handle_pose_msg)
     rospy.spin()
