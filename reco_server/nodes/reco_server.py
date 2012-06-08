@@ -47,8 +47,8 @@ def set_speeds(speed, rotsp):
     print "Speeds:", speed, rotsp
 
 def set_woah_goal(speed, theta):
-    command['speed'] = speed
-    command['theta'] = theta
+    command['speed'] = float(speed)
+    command['theta'] = float(theta)
 
 def send_tickets():
     while True:
@@ -74,20 +74,23 @@ def got_command(data):
     if cmd[0] == 'speed':
         command['woah'] = False
         set_speeds(cmd[1], cmd[2])
-    if cmd[0] == 'woah':
+    elif cmd[0] == 'woah':
         command['woah'] = True
         set_woah_goal(cmd[1], cmd[2])
+        #print "WOAH at", cmd[1], cmd[2]
+    elif cmd[0] == 'config':
+        pass
+        #print "Config:", data
     else:
         print "Unknown command:", data
 
 def got_scan(msg):
     age = time.time() - client['stamp']
     if command['woah'] and age < COMMAND_TIMEOUT:
-        (sp, tu) = woah.woah_ahead(
-            command['theta'], command['speed'], msg)
+        ga, gv = command['theta'], command['speed']
+        (sp, tu) = woah.woah_ahead(ga, gv, msg)
+        #print "WOAH:", ga, gv, " => ", sp, tu
         set_speeds(sp, tu)
-
-    
 
 class PacketHandler(SocketServer.BaseRequestHandler):
     def handle(self):
@@ -116,7 +119,7 @@ class PacketHandler(SocketServer.BaseRequestHandler):
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, lambda _a, _b: os._exit(0))
 
-    rospy.Subscribe("/robot/base_scan", LaserScan, got_scan)
+    rospy.Subscriber("/robot/base_scan", LaserScan, got_scan)
 
     tthr = threading.Thread(target=send_tickets)
     tthr.start()
