@@ -1,13 +1,15 @@
 <!-- -*- xml -*- -->
 <launch>
     <group ns="robot">
-        <node pkg="stark_frames" type="gps_to_map.py" name="gps_to_map" output="screen" respawn="true" />
+        <node pkg="stark_frames" type="gps_to_map.py" name="gps_to_map" 
+	      output="screen" respawn="true" />
         
         <node pkg="stark_frames" type="mapToOdom" name="MapToOdom" respawn="true">
-            <remap from="input" to="pose2d"/>
+            <remap from="input" to=""/>
         </node>
         
-        <!--node pkg="stark_frames" type="odom_to_base_link.py" name="odom_to_base" output="screen" respawn="true"   -->
+        <node pkg="stark_frames" type="odom_to_base_link.py" name="odom_to_base"
+	      output="screen" respawn="true"/>
         
         <node pkg="tf" type="static_transform_publisher" name="laser_frame"
             args="0.75 0.0 0.0 0.0 0.0 0.0 base_link laser_link 100" 
