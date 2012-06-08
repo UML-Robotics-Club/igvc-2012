@@ -14,10 +14,14 @@ public class ControlActivity extends Activity {
 	private static final String TAG = "ControlActivity";
 	
 	StatusView view;
+	
+	ControlClient client;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        client = ControlClient.getInstance();
         
         view = new StatusView(this);
         setContentView(view);
@@ -52,8 +56,8 @@ public class ControlActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
        switch (item.getItemId()) {
        case R.id.menuShowConfig:
-    	   startActivity(new Intent(ControlActivity.this, ConfigActivity.class));
-    	   return true;    	   
+    	   startActivity(new Intent(ControlActivity.this, ConnectActivity.class));
+    	   return true;
        case R.id.menuExit:
     	   killProcess();
     	   return true;    	   

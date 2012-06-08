@@ -29,6 +29,8 @@ public class StatusView extends View {
 		super(context);
 
 		client = ControlClient.getInstance();
+		maxSpeed = client.getMaxSpeed();
+		maxRotsp = client.getMaxRotsp();
 	}
 
 	private float sign(float xx) {
@@ -39,7 +41,7 @@ public class StatusView extends View {
 	}
 	
 	private void sendCommand(double sp, double tu) {
-		client.setCommand(false, sp, tu);
+		client.setCommand(sp, tu);
 		lastSP = sp;
 		lastTU = tu;
 	}
@@ -74,23 +76,23 @@ public class StatusView extends View {
 		if (aa == MotionEvent.ACTION_MOVE) {
 			float dx = touchXX - 0.5f;
 			float dy = touchYY - 0.5f;
-			
+
 			if (Math.hypot(dx, dy) < 0.05f) {
 				dx = 0.0f;
 				dy = 0.0f;				
 			}
 			else {
-				dx -= 0.05f * sign(dx);
-				dy -= 0.05f * sign(dy);
+				dx -= 0.025f * sign(dx);
+				dy -= 0.025f * sign(dy);
 			}
 
 			float speed = maxSpeed * (2.0f * -dy);
 			float rotsp = maxRotsp * (2.0f * -dx);
-			
+
 			if (gestureValid)
 				sendCommand(speed, rotsp);
 		}
-				
+
 		if (aa == MotionEvent.ACTION_UP) {
 			gestureValid = false;
 			Log.v(TAG, "Gesture end: touch ended");
