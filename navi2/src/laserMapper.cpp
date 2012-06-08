@@ -8,10 +8,14 @@
 #include "geometry_msgs/Point.h"
 #include "geometry_msgs/Quaternion.h"
 
+#include "transformHelper.hpp"
+
+
 void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
 bool inBounds(int xx, int yy);
 void inflateObstacle(int xx, int yy);
 void raytrace(int xs, int ys, double xinc, double yinc, double dist);
+void rayclear(int xs, int ys, int xt, int yt);
 
 typedef struct
 {
@@ -21,7 +25,6 @@ typedef struct
 
 RosParams rosParams;
 ros::Publisher *laserMapPub;
-tf::TransformListener* tfListener;
 nav_msgs::OccupancyGrid* laserGrid;
 
 int main(int argc, char* argv[])
@@ -63,28 +66,14 @@ int main(int argc, char* argv[])
     ros::Publisher laserMapPub_ = nh.advertise<nav_msgs::OccupancyGrid>("output", 1);
     laserMapPub = &laserMapPub_;
     
-    tfListener = new tf::TransformListener();
     ros::spin();
 }
 
 void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
-    tf::StampedTransform transform;
-    try
-    {
-        tfListener->waitForTransform("/map", msg->header.frame_id, msg->header.stamp, ros::Duration(1.0));
-        tfListener->lookupTransform("/map", msg->header.frame_id, msg->header.stamp, transform);
-    }
-    catch (tf::TransformException ex)
-    {
-        ROS_ERROR("%s",ex.what());
-    }
+    double xx, yy, yaw;
     
-    double r, p, xx, yy, yaw;
-    
-    btMatrix3x3(transform.getRotation()).getRPY(r, p, yaw);
-    xx = transform.getOrigin().x();
-    yy = transform.getOrigin().y();
+    getTransform("/map", msg->header.frame_id, msg->header.stamp, ros::Duration(1.0), xx, yy, yaw);
     
     double phi = msg->angle_min;
     unsigned int xr = xx / laserGrid->info.resolution;
@@ -106,6 +95,14 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
         }
     }
     
+    double xb, yb;
+    
+    getTransform("/map", "base_link", msg->header.stamp, ros::Duration(1.0), xb, yb, yaw);
+    rayclear(xb / laserGrid->info.resolution,
+             yb / laserGrid->info.resolution, xr, yr);
+    
+    //laserGrid->data[xb / laserGrid->info.resolution + laserGrid->info.width * yb / laserGrid->info.resolution] = 0;
+    
     laserGrid->header.stamp = msg->header.stamp;
     laserMapPub->publish(*laserGrid);
 }
@@ -125,7 +122,14 @@ void inflateObstacle(int xx, int yy)
         {
             if (hypot(xo, yo) <= (rosParams.inflationRadius / laserGrid->info.resolution) && inBounds(xx + xo, yy + yo))
             {
-                laserGrid->data[(xx + xo) + laserGrid->info.width * (yy + yo)] += laserGrid->data[(xx + xo) + laserGrid->info.width * (yy + yo)] >= 100 ? 0 : 1;
+                if (laserGrid->data[(xx + xo) + laserGrid->info.width * (yy + yo)] >= 98)
+                {
+                    laserGrid->data[(xx + xo) + laserGrid->info.width * (yy + yo)] = 100;
+                }
+                else
+                {
+                    laserGrid->data[(xx + xo) + laserGrid->info.width * (yy + yo)] += 2;
+                }
             }
         }
     }
@@ -147,6 +151,28 @@ void raytrace(int xs, int ys, double xinc, double yinc, double dist)
         {
             laserGrid->data[(int)xx + laserGrid->info.width * (int)yy]--;
         }
+        
+        xx += xinc;
+        yy += yinc;
+        curDist += 1;
+    }
+}
+
+void rayclear(int xs, int ys, int xt, int yt)
+{
+    double xx = xs;
+    double yy = ys;
+    
+    double ang = atan2(yt - ys, xt - xs);
+    double xinc = cos(ang) / 2.0;
+    double yinc = sin(ang) / 2.0;
+    
+    double dist = hypot(xt - xs, yt - ys);
+    double curDist = 0;
+    
+    while (inBounds(xx, yy) && curDist <= dist)
+    {
+        laserGrid->data[(int)xx + laserGrid->info.width * (int)yy] = 0;
         
         xx += xinc;
         yy += yinc;

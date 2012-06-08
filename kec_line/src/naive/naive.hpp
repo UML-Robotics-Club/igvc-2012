@@ -7,12 +7,14 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <cmath>
 
-#define RANGE       5.0
-#define RANGE_MIN   0.46
-#define SCAN_RES    180
-#define PPM         20.0
-#define ORIGIN_X    209
-#define ORIGIN_Y    467
+#define RANGE       7.0
+#define RANGE_MIN   1.35
+/*0.46*/
+#define SCAN_RES    55
+#define PPM         105.0
+#define ORIGIN_X    191
+#define ORIGIN_Y    614 
+/*479*/
 
 /*
 //pixel
@@ -28,6 +30,7 @@ using namespace cv;
 int avgValue(Mat* in);
 void optimumThreshold(Mat* in, Mat* out, int t);
 void segment(Mat* in, Mat* out);
+void sexysegment(Mat* in, Mat* out);
 
 //raycast
 float ray(Mat* in, int i, int j, double theta);

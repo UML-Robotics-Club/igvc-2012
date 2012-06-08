@@ -8,5 +8,6 @@
         <node name="bird_xform" pkg="bird" type="bird_xform" required="true" />
 
         <!--raycast-->
+        <node name="raycast" pkg="kec_line" type="raycast" required="true" />
     </group>
 </launch>

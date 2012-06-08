@@ -1,0 +1,48 @@
+<!-- -*- xml -*- -->
+<launch>
+    <group ns="robot">
+        <node name="LaserMap" pkg="navi2" type="laserMapper">
+            <remap from="input" to="base_scan"/>
+            <remap from="output" to="laserMap"/>
+            <rosparam command="load" file="$(find navi2)/laserMap.yaml"/>
+        </node>
+        
+        <node name="VisionMap" pkg="navi2" type="laserMapper">
+            <remap from="input" to="cam_laser"/>
+            <remap from="output" to="laserMap2"/>
+            <rosparam command="load" file="$(find navi2)/laserMap.yaml"/>
+        </node>
+        
+        <node name="MapMerger" pkg="navi2" type="mapMerger">
+            <remap from="output" to="mergedMap"/>
+            <rosparam param="inputTopics">['laserMap', 'laserMap2']</rosparam>
+        </node>
+        
+        <node name="navi2" pkg="navi2" type="navi2">
+            <remap from="inputMap" to="mergedMap"/>
+            <remap from="inputGoal" to="goal"/>
+            <remap from="output" to="localPath"/>
+            <rosparam command="load" file="$(find navi2)/navi2.yaml"/>
+        </node>
+        
+        <node name="LaserMapNoInflation" pkg="navi2" type="laserMapper">
+            <remap from="input" to="base_scan"/>
+            <remap from="output" to="laserMapNoInflation"/>
+            <rosparam command="load" file="$(find navi2)/noInflationMap.yaml"/>
+        </node>
+        
+        <node name="woahMerger" pkg="navi2" type="woahMerger">
+            <remap from="inputMap" to="laserMapNoInflation"/>
+            <remap from="inputLaser" to="base_scan"/>
+            <remap from="output" to="woahLaser"/>
+            <rosparam command="load" file="$(find navi2)/noInflationMap.yaml"/>
+        </node>
+        
+        <node name="pathFilterer" pkg="navi2" type="pathFilter.py" output="screen">
+            <remap from="input" to="localPath"/>
+            <remap from="output" to="FilteredLocalPath"/>
+        </node>
+    </group>
+</launch>
+
+<!-- launch-prefix="xterm -e gdb - -args" -->

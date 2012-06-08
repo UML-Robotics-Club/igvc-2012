@@ -32,5 +32,31 @@
             <remap from="output" to="localPath"/>
             <rosparam command="load" file="$(find navi2)/navi2.yaml"/>
         </node>
+        
+        <node name="LaserMapNoInflation" pkg="navi2" type="laserMapper">
+            <remap from="input" to="base_scan"/>
+            <remap from="output" to="laserMapNoInflation"/>
+            <rosparam command="load" file="$(find navi2)/noInflationMap.yaml"/>
+        </node>
+        
+        <node name="woahMerger" pkg="navi2" type="woahMerger">
+            <remap from="inputMap" to="laserMapNoInflation"/>
+            <remap from="inputLaser" to="base_scan"/>
+            <remap from="output" to="woahLaser"/>
+            <rosparam command="load" file="$(find navi2)/noInflationMap.yaml"/>
+        </node>
+        
+        <node name="pathFilterer" pkg="navi2" type="pathFilter.py" output="screen">
+            <remap from="input" to="localPath"/>
+            <remap from="output" to="FilteredLocalPath"/>
+        </node>
+        
+        <node name="woah" pkg="navi2" type="woah.py">
+            <remap from="inputPath" to="FilteredLocalPath"/>
+            <remap from="inputLaser" to="woahLaser"/>
+            <remap from="output" to="cmd_vel"/>
+        </node>
     </group>
 </launch>
+
+<!-- launch-prefix="xterm -e gdb - -args" -->

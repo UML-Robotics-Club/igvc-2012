@@ -1,6 +1,7 @@
 #ifndef GPS_PROXY_HH
 #define GPS_PROXY_HH
 
+#include <fstream>
 #include <map>
 #include <libgpsmm.h>
 
@@ -26,6 +27,7 @@ class GpsProxy {
   private:
     std::map<std::string,struct gps_data_t> data;
     gpsmm* gps;
+    std::ofstream fout_gps; // file to optain raw gps x,y data
 };
 
 #endif

@@ -31,9 +31,13 @@ void SearchNodeCmp::SetTarget(int xt, int yt)
 
 Pathfinder::Pathfinder(ros::NodeHandle& nh) : m_nh(nh)
 {
-    SetTarget(0, 0);
+    double xx, yy, dc;
+    
+    getTransform("/map", "/base_link", ros::Time::now(), ros::Duration(5.0), xx, yy, dc);
+    
+    SetTarget(xx, yy);
  
-    m_debug = nh.advertise<visualization_msgs::MarkerArray>("path_debug", 1);
+    //m_debug = nh.advertise<visualization_msgs::MarkerArray>("debug", 1);
     
     ros::param::param<double>("~pathfinderTolerance", m_tolerance, 1.5);
 }
@@ -54,13 +58,20 @@ nav_msgs::Path Pathfinder::MakePath(nav_msgs::OccupancyGrid& map)
     {
         ros::Time stamp = ros::Time::now();
         
-        m_tfListener.waitForTransform("/map", "/base_footprint", stamp, ros::Duration(1.0));
-        m_tfListener.lookupTransform("/map", "base_footprint", stamp, transform);
+        m_tfListener.waitForTransform("/map", "/base_link", stamp, ros::Duration(1.0));
+        m_tfListener.lookupTransform("/map", "base_link", stamp, transform);
     }
     catch (tf::TransformException ex)
     {
         ROS_ERROR("%s",ex.what());
     }
+    
+    double xxd, yyd, dc;
+    
+    getTransform("/map", "/base_link", ros::Time::now(), ros::Duration(1.0), xxd, yyd, dc);
+    
+    int xx = xxd / map.info.resolution;
+    int yy = yyd / map.info.resolution;
     
     m_searchmap = new SearchNode[map.info.height * map.info.width];
     for (unsigned int y = 0; y < map.info.height; ++y)
@@ -72,15 +83,12 @@ nav_msgs::Path Pathfinder::MakePath(nav_msgs::OccupancyGrid& map)
         }
     }
     
-    int xx = transform.getOrigin().x() / map.info.resolution;
-    int yy = transform.getOrigin().y() / map.info.resolution;
-    
     /* Should get current vel */
     queue.push(&(m_searchmap[yy * map.info.width + xx]));
     queue.top()->m_cost = 0;
     queue.top()->m_parent = HOME_NODE;
     
-    ROS_INFO("START (FL): %lf, %lf", transform.getOrigin().x(), transform.getOrigin().y());
+    ROS_INFO("START (FL): %lf, %lf", xxd, yyd);
     ROS_INFO("TARGE (FL): %lf, %lf", m_xt, m_yt);
     
     ROS_INFO("NODE DETAILS: %d %d %lf", 
@@ -88,9 +96,9 @@ nav_msgs::Path Pathfinder::MakePath(nav_msgs::OccupancyGrid& map)
              m_searchmap[yy * map.info.width + xx].m_y,
              m_searchmap[yy * map.info.width + xx].m_cost);
     
-    visualization_msgs::MarkerArray markers;
+    /*visualization_msgs::MarkerArray markers;
     
-    /*{
+    {
         //Red Lines
         visualization_msgs::Marker mark;
         
@@ -189,7 +197,7 @@ nav_msgs::Path Pathfinder::MakePath(nav_msgs::OccupancyGrid& map)
                 cur = cur->m_parent;
             }
             
-            m_debug.publish(markers);
+            //m_debug.publish(markers);
             
             delete[] m_searchmap;
             
@@ -251,7 +259,7 @@ nav_msgs::Path Pathfinder::MakePath(nav_msgs::OccupancyGrid& map)
         }
     }
     
-    m_debug.publish(markers);
+    //m_debug.publish(markers);
     
     delete[] m_searchmap;
     
@@ -385,32 +393,6 @@ visualization_msgs::Marker Pathfinder::DebugArrow(SearchNode* a, double res)
     mark.color.g = 0.0;
     mark.color.b = 1.0;
     mark.color.a = 1.0;
-    
-    /*std::stringstream ss;
-    
-    m_count++;
-    ss << std::setprecision(2) << hypot(a->m_x - m_xt / res, a->m_y - m_yt / res);
-    
-    mark.header.stamp = ros::Time::now();
-    mark.header.frame_id = "/map";
-    mark.action = visualization_msgs::Marker::ADD;
-    mark.ns = "Expansion";
-    mark.id = a->m_x + 500 * a->m_y;
-    mark.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    mark.lifetime = ros::Duration(1.0);
-    
-    mark.text = ss.str();
-    
-    mark.scale.z = res / 3.5;
-    mark.pose.orientation.w = 1.0;
-    
-    mark.pose.position.x = a->m_x * res;
-    mark.pose.position.y = a->m_y * res;
-    
-    mark.color.r = 0.0;
-    mark.color.g = 0.0;
-    mark.color.b = 1.0;
-    mark.color.a = 1.0;*/
     
     return mark;
 }

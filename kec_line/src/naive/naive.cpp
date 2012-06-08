@@ -95,10 +95,10 @@ void raycast(Mat* in, sensor_msgs::LaserScan& scan){
     const int res = SCAN_RES;
 
     scan.header.stamp = scan_time;
-    scan.header.frame_id = "lase_link";
-    scan.angle_min = 0; //assume scanning from 0->180
-    scan.angle_max = M_PI;
-    scan.angle_increment = M_PI / res;
+    scan.header.frame_id = "vision_laser_link";
+    scan.angle_min = (M_PI * 60.0/180.0) - (M_PI/2.0); //assume scanning from 0->180
+    scan.angle_max = (M_PI * 115.0/180.0) - (M_PI/2.0);
+    scan.angle_increment = (M_PI / 180);
     scan.time_increment = (1 / 60) / res;
     scan.range_min = RANGE_MIN;
     scan.range_max = RANGE;
@@ -114,9 +114,10 @@ void raycast(Mat* in, sensor_msgs::LaserScan& scan){
     int j = ORIGIN_Y;
     int k = 0;
 
-    for(theta = 2.0 * M_PI; theta > M_PI; theta -= M_PI / res){
+    //for(theta = M_PI * (60.0/180.0); theta < M_PI * (115.0/180.0); theta += scan.angle_increment){
+    for(theta = M_PI * (60.0/180.0); theta < M_PI * (115.0/180.0); theta += scan.angle_increment){
         scan.ranges[k] = ray(in, i, j, theta);
-        scan.ranges[k] += (scan.ranges[k] < 5.0 - RANGE_MIN) ? RANGE_MIN : 0;
+        //scan.ranges[k] = (scan.ranges[k] < RANGE_MIN) ? RANGE_MIN : scan.ranges[k];
         k++;
     }   
 
@@ -126,16 +127,115 @@ float ray(Mat* in, int i, int j, double theta){
     double x = cos(theta);
     double y = sin(theta);
     int h;
-    int xx, yy;
+    signed int xx, yy;
 
     for(h = 1; h < RANGE * PPM; h++){
         xx = floor(i+(x*h));
-        yy = floor(j+(y*h));
+        yy = floor(j-(y*h));
     
-        if(in->at<uint8_t>(xx,yy) != 0)
-            return (float) h / PPM;
+        if(xx > 0 && xx < in->cols && yy > 0 && yy < in->rows)
+            if(in->at<uint8_t>(yy,xx) != 0)
+                return (float) h / PPM;
     }
 
     //else return max range
     return RANGE;
 }
+
+void sexysegment(Mat* in, Mat* out){
+    Mat mid(in->rows, in->cols, CV_8UC3);
+    Mat gray(in->rows, in->cols, CV_8UC1);
+    Mat temp(in->rows, in->cols, CV_8UC1);
+
+    pyrMeanShiftFiltering(*in, mid, 2, 30, 2);
+    //cvtColor(mid, gray, CV_BGR2GRAY);
+    std::vector<Mat> bgr; 
+    split(mid, bgr);
+    
+    addWeighted(bgr[0], 2.0, bgr[1], -1.0, 0, gray);
+    addWeighted(gray, 2.0, bgr[2], -1.0, 0, gray);
+
+    for(int j=0; j<in->rows/3; j++){
+        for(int i=0; i<in->cols; i++){
+            gray.at<uint8_t>(j,i) = 0;
+        }
+    }
+
+    
+
+    Mat mystruct = getStructuringElement(MORPH_RECT, Size(15,15));
+    morphologyEx(gray, temp, MORPH_TOPHAT, mystruct, Point(-1,-1), 1);
+    adaptiveThreshold(temp, gray, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 43, -5 );
+
+    mystruct = getStructuringElement(MORPH_RECT, Size(3,3));
+    morphologyEx(gray, gray, MORPH_OPEN, mystruct, Point(-1,-1), 1);
+
+    //remove blobs
+    std::vector<std::vector<Point> > v;
+    std::vector<std::vector<Point> > vb;
+    
+    findContours(gray, v, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+
+    for(unsigned int i=0; i<v.size(); i++){
+        RotatedRect r = minAreaRect(v[i]);
+
+        if( (r.size.width / r.size.height > 1.0 ||
+            r.size.height / r.size.width > 1.0) &&
+            (r.size.height > 50 ||
+             r.size.width > 50)){
+            vb.push_back(v[i]);
+        }
+    }
+
+    *out = Mat::zeros(out->size(), out->type());
+    drawContours(*out, vb, -1, Scalar(255,255,255), -1);
+            
+
+    //for(int j=0; j<gray.rows; j++){
+        //for(int i=0; i<gray.cols; i++){
+            //gray.at<uint8_t>(j,i) = 0;
+        //}
+    //}
+    //*out = in->clone();
+    //drawContours(*out, vb, -1, Scalar(255,0,0), -1);
+    //drawContours(gray, vb, -1, Scalar(255,255,255), -1);
+    
+
+    /*
+    //hough
+    std::vector<Vec4i> lines;
+    HoughLinesP(gray, lines, 1, CV_PI/180, 80, 60, 10);
+    //HoughLinesP(gray, lines, 1, CV_PI/180, 120, 100, 5);
+
+    for(size_t i=0; i<lines.size(); i++){
+        line(*out, Point(lines[i][0], lines[i][1]), Point(lines[i][2], lines[i][3]), Scalar(255,255,255), 3, 8);
+    }
+
+    color transform
+    *out = in->clone();
+    drawContours(*out, v, -1, Scalar(255,0,0), -1);
+      
+    for(size_t i=0; i<lines.size(); i++){
+        line(*out, Point(lines[i][0], lines[i][1]), Point(lines[i][2], lines[i][3]), Scalar(0,0,255), 3, 8);
+    }*/
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

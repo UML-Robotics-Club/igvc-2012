@@ -24,19 +24,19 @@ public:
         it_pub = it.advertise("cam_bird", 1);
 
         //read in homography matrix
-        cv::FileStorage fs("/home/ken/spring12/robotics/ros_workspace/igvc-2012/bird/data/H.xml", cv::FileStorage::READ);
+        cv::FileStorage fs("/home/stark/ros/igvc-2012/bird/data/H.xml", cv::FileStorage::READ);
     
         H.create(3, 3, CV_32F);
         fs["H"] >> H;
         fs.release();
         
-        fs.open("/home/ken/spring12/robotics/ros_workspace/igvc-2012/bird/data/Intrinsics.xml", cv::FileStorage::READ);
+        fs.open("/home/stark/ros/igvc-2012/bird/data/Intrinsics.xml", cv::FileStorage::READ);
         intrinsic.create(3, 3, CV_32F);
         fs["Intrinsics"] >> intrinsic;
         fs.release();
 
         
-        fs.open("/home/ken/spring12/robotics/ros_workspace/igvc-2012/bird/data/Distortion.xml", cv::FileStorage::READ);
+        fs.open("/home/stark/ros/igvc-2012/bird/data/Distortion.xml", cv::FileStorage::READ);
         distortion.create(4, 1, CV_32F);
         fs["Distortion"] >> distortion;
         fs.release();
