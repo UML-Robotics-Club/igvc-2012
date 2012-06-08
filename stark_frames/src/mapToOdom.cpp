@@ -46,8 +46,8 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     
     try
     {
-        tfListener->waitForTransform("/odom", "/base_footprint", now, ros::Duration(1.0));
-        tfListener->lookupTransform("/odom", "/base_footprint", now, odomToBase);
+        tfListener->waitForTransform("/odom", "/base_link", now, ros::Duration(1.0));
+        tfListener->lookupTransform("/odom", "/base_link", now, odomToBase);
     }
     catch (tf::TransformException ex)
     {
