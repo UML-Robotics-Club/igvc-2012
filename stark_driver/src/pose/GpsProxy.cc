@@ -1,4 +1,5 @@
 #include <iostream>
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -11,12 +12,15 @@ GpsProxy::GpsProxy()
     gps = new gpsmm;
     gps->open("localhost", DEFAULT_GPSD_PORT);
     gps->stream(WATCH_ENABLE|WATCH_JSON);
+    fout_gps.open("raw_gps.txt");
+
 }
 
 GpsProxy::~GpsProxy()
 {
     gps->close();
     delete gps;
+    fout_gps.close();
 }
 
 void
@@ -24,8 +28,10 @@ GpsProxy::update()
 {
     struct gps_data_t* msg;
     msg = gps->poll();
-
+    double y = utm_north(msg->fix.latitude, msg->fix.longitude);
+    double x = utm_east(msg->fix.latitude, msg->fix.longitude);
     std::string path(msg->dev.path);
+    fout_gps << path << " " << x << " " << y << endl;
 
 #if 0
     cout << "Polled dev: " << path

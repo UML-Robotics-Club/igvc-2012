@@ -2,5 +2,7 @@
     <include file="$(find stark_driver)/launch/motor_driver.launch"/>
     <include file="$(find stark_driver)/launch/pose_stark.launch"/>
     <include file="$(find stark_driver)/launch/lidar.launch"/>
+    <include file="$(find stark_driver)/launch/camera.launch"/>
     <!-- include file="$(find stark_driver)/launch/stereo_cameras.launch"/ -->
+    <include file="$(find stark_driver)/launch/stark_frames.launch"/>
 </launch>

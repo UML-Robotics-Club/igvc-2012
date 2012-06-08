@@ -44,7 +44,8 @@ public:
         cv::Mat out(frame->image.rows, frame->image.cols, CV_8UC1);
         
         //lineDetect(frame->image, &iplout);
-        segment(&frame->image, &out);
+        //segment(&frame->image, &out);
+        sexysegment(&frame->image, &out);
 
         //show image
         //cv::imshow("in", frame->image);

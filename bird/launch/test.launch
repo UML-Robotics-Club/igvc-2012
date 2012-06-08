@@ -1,0 +1,15 @@
+<launch>
+    <node name="usb_cam_node" pkg="usb_cam" type="usb_cam_node">
+        <param name="video_device" value="/dev/video1" />
+        <param name="pixel_format" value="yuyv" />
+        <remap from="usb_cam_node/image_raw" to="cam" />
+    </node>
+    <node name="bird_xform" pkg="bird" type="bird_xform" />
+
+    <node name="image_view" pkg="rviz" type="image_view">
+        <remap from="image" to="cam" />
+    </node>
+    <node name="image_view_bird" pkg="rviz" type="image_view">
+        <remap from="image" to="cam_bird" />
+    </node>
+</launch>

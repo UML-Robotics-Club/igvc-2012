@@ -1,0 +1,10 @@
+<launch>
+    <!-- camera driver -->
+    <group ns="robot">
+        <node name="usb_cam_node" pkg="usb_cam" type="usb_cam_node">
+            <param name="video_device" value="/dev/video1" />
+            <param name="pixel_format" value="yuyv" />
+            <remap from="usb_cam_node/image_raw" to="cam" />
+        </node>
+    </group>
+</launch>

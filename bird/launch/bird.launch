@@ -1,0 +1,5 @@
+<launch>
+    <group ns="robot">
+        <node name="bird_xform" pkg="bird" type="bird_xform" />
+    </group>
+</launch>

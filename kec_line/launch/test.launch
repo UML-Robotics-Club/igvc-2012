@@ -1,0 +1,11 @@
+<!-- -*- xml -*- -->
+<launch>
+    <node name="run" pkg="rosbag" type="play" args="/home/ken/newb.bag" />
+    <group ns="robot">
+        <!-- segment -->
+        <node name="c_lines" pkg="kec_line" type="c_lines" required="true" />
+    </group>
+    <node name="view" pkg="rviz" type="image_view">
+        <remap from="image" to="robot/cam" />
+    </node>
+</launch>

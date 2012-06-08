@@ -1,0 +1,17 @@
+<package>
+  <description brief="reco_server">
+
+     reco_server
+
+  </description>
+  <author>Nat Tuck</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/reco_server</url>
+  <depend package="rospy"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+
