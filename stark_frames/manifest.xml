@@ -12,6 +12,7 @@
   <depend package="geometry_msgs"/>
   <depend package="nav_msgs"/>
   <depend package="rospy"/>
+  <depend package="roscpp"/>
   <depend package="stark_driver"/>
 
 </package>

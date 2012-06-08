@@ -1,14 +1,21 @@
+<!-- -*- xml -*- -->
 <launch>
-   <node pkg="stark_frames" type="map_frame.py" name="map_frame" 
+    <group ns="robot">
+        <node pkg="stark_frames" type="gps_to_map.py" name="gps_to_map" 
+	      output="screen" respawn="true" />
+        
+        <node pkg="stark_frames" type="mapToOdom" name="MapToOdom" respawn="true">
+            <remap from="input" to=""/>
+        </node>
+        
+        <node pkg="stark_frames" type="odom_to_base_link.py" name="odom_to_base"
+	      output="screen" respawn="true"/>
+        
+        <node pkg="tf" type="static_transform_publisher" name="laser_frame"
+            args="0.75 0.0 0.0 0.0 0.0 0.0 base_link laser_link 100" 
             output="screen" respawn="true" />
-   <node pkg="stark_frames" type="odom_frame.py" name="odom_frame" 
-            output="screen" respawn="true" />
-   <node pkg="stark_frames" type="base_frame.py" name="base_frame" 
-            output="screen" respawn="true" />
-   <node pkg="tf" type="static_transform_publisher" name="laser_frame"
-	args="0.75 0.0 0.0 0.0 0.0 0.0 base_link laser_link 100" 
-	output="screen" respawn="true" />
-   <node pkg="tf" type="static_transform_publisher" name="vision_laser_frame"
-	args="0.0 0.0 0.0 0.0 0.0 0.0 base_link vision_laser_link 100" 
-	output="screen" respawn="true" />
+        <node pkg="tf" type="static_transform_publisher" name="vision_laser_frame"
+            args="0.0 0.0 0.0 0.0 0.0 0.0 base_link vision_laser_link 100" 
+	    output="screen" respawn="true" />
+    </group>
 </launch>
