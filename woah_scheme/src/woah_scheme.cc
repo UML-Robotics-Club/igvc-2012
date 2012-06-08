@@ -58,7 +58,7 @@ got_scan(const LaserScan::ConstPtr& msg)
         double theta = angle + ii * msg->angle_increment;
         double range = msg->ranges[ii];
         SCM cell = scm_cons(scm_from_double(theta), scm_from_double(range));
-        scm_cons(cell, ranges);
+        ranges = scm_cons(cell, ranges);
     }
 
     SCM cmd_pair = scm_call_4(woah, scm_from_double(goal_alpha), scm_from_double(goal_dist), 
