@@ -1,6 +1,7 @@
 package net.ferrus.ReCo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -50,8 +51,14 @@ public class ControlActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
        switch (item.getItemId()) {
-       default:
+       case R.id.menuShowConfig:
+    	   startActivity(new Intent(ControlActivity.this, ConfigActivity.class));
+    	   return true;    	   
+       case R.id.menuExit:
     	   killProcess();
+    	   return true;    	   
+       default:
+    	   Log.v(TAG, "Unknown menu item");
     	   return true;
        }
     }

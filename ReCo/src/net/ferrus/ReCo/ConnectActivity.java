@@ -26,7 +26,7 @@ public class ConnectActivity extends Activity {
         		ControlClient client = ControlClient.getInstance();
         		client.connect(editHost.getText().toString(), editPort.getText().toString());
         		
-        		startActivity(new Intent(Intent.ACTION_RUN));
+        		startActivity(new Intent(ConnectActivity.this, ControlActivity.class));
         	}
         });
         

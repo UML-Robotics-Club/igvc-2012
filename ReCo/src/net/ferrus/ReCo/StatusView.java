@@ -14,59 +14,87 @@ import android.view.View;
 public class StatusView extends View {
 	private final String TAG = "StatusView";
 
+	ControlClient client;
+	
 	private boolean gestureValid = false;
 	private float maxSpeed = 1.0f;
 	private float maxRotsp = 1.0f;
 	
+	private float touchXX  = 0.25f;
+	private float touchYY  = 0.25f;
+	private double lastSP  = 0.0;
+	private double lastTU  = 0.0;
+	
 	public StatusView(Context context) {
 		super(context);
+
+		client = ControlClient.getInstance();
 	}
 
+	private float sign(float xx) {
+		if (xx >= 0)
+			return +1.0f;
+		else
+			return -1.0f;
+	}
+	
+	private void sendCommand(double sp, double tu) {
+		client.setCommand(false, sp, tu);
+		lastSP = sp;
+		lastTU = tu;
+	}
+	
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
 		float WW = getWidth();
 		float HH = getHeight();
 		
-		ControlClient client = ControlClient.getInstance();
-		
 		int count = ev.getPointerCount();
 		
 		if (count > 1) {
 			gestureValid = false;
-			client.setCommand(false, 0, 0);
+			Log.v(TAG, "Gesture end: second touch");
+			sendCommand(0.0, 0.0);
 			return true;
 		}
 		
 		int   aa = ev.getAction() & MotionEvent.ACTION_MASK;
-		float xx = ev.getX(0) / WW;
-		float yy = ev.getY(0) / HH;
+		touchXX = ev.getX(0) / WW;
+		touchYY = ev.getY(0) / HH;
+		invalidate();
 
 		if (aa == MotionEvent.ACTION_DOWN) {
-			if (Math.hypot(xx - 0.5, yy - 0.5) < 0.1) {
+			if (Math.hypot(touchXX - 0.5, touchYY - 0.5) < 0.1) {
 				gestureValid = true;
+				Log.v(TAG, "Gesture start");
 			}
-			client.setCommand(false, 0, 0);
+			sendCommand(0.0, 0.0);
 		}
 
 		if (aa == MotionEvent.ACTION_MOVE) {
-			float dx = xx - 0.5f;
-			float dy = yy - 0.5f;
+			float dx = touchXX - 0.5f;
+			float dy = touchYY - 0.5f;
 			
-			if (Math.abs(dx) < 0.05f)
+			if (Math.hypot(dx, dy) < 0.05f) {
 				dx = 0.0f;
-			if (Math.abs(dy) < 0.05f)
-				dy = 0.0f;
-			
+				dy = 0.0f;				
+			}
+			else {
+				dx -= 0.05f * sign(dx);
+				dy -= 0.05f * sign(dy);
+			}
+
 			float speed = maxSpeed * (2.0f * -dy);
 			float rotsp = maxRotsp * (2.0f * -dx);
 			
 			if (gestureValid)
-				client.setCommand(false, speed, rotsp);
+				sendCommand(speed, rotsp);
 		}
 				
 		if (aa == MotionEvent.ACTION_UP) {
 			gestureValid = false;
-			client.setCommand(false, 0, 0);
+			Log.v(TAG, "Gesture end: touch ended");
+			sendCommand(0.0, 0.0);
 		}
 
 		return true;
@@ -88,7 +116,22 @@ public class StatusView extends View {
 		canvas.drawCircle(0.5f, 0.5f, 0.1f, paint);
 		paint.setColor(Color.GRAY);
 		canvas.drawCircle(0.5f, 0.5f, 0.05f, paint);
-
+		
+		// Show current commands
+		paint.setColor(Color.WHITE);
+		paint.setTextSize(10.0f);
+		canvas.drawText(String.format("%.02f %.02f", lastSP, lastTU), 0.1f, 0.1f, paint);
+		
+		// Draw the gesture.
+		if(gestureValid) {
+			paint.setColor(Color.BLUE);			
+		}
+		else {
+			paint.setColor(Color.RED);
+		}
+		
+		canvas.drawCircle(touchXX, touchYY, 0.025f, paint);
+		
 		Log.v(TAG, "onDraw");
 	}
 }

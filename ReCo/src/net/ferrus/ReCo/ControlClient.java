@@ -30,6 +30,8 @@ public class ControlClient implements Runnable {
 	String mode  = "speed";
 	double speed = 0.0;
 	double theta = 0.0;
+	boolean assist = false;
+	
 	
 	private ControlClient() {
 		try {
@@ -79,6 +81,8 @@ public class ControlClient implements Runnable {
 	
 	private synchronized void send(String data) {
 		byte[] buffer = data.getBytes();
+		if (addr == null)
+			return;
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, addr, port);
 		try {
 			sock.send(packet);
@@ -98,5 +102,11 @@ public class ControlClient implements Runnable {
 			return "0.0";
 		}
 		return new String(buffer).split("\0")[0];
+	}
+	
+	public synchronized void updateSettings(String maxSpeed, String maxTurn, boolean enableAssist) {
+		Log.v(TAG, maxSpeed + "|" + maxTurn + "|" + enableAssist);
+		assist = enableAssist;
+		send(String.format("0.0;config maxSpeed=%.02f maxTurn=%.02f", maxSpeed, maxTurn));
 	}
 }

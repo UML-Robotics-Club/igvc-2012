@@ -3,6 +3,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" >
 
+        <TableRow>
         <TextView
             android:id="@+id/textView1"
             android:layout_width="wrap_content"
@@ -10,41 +11,60 @@
             android:minHeight="0.5in"
             android:text="Connect to Robot"
             android:textAppearance="?android:attr/textAppearanceLarge" />
-
+		</TableRow>
+        
+        <TableRow>
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Host" />
+        </TableRow>
+
+        <TableRow>
 
         <EditText
             android:id="@+id/editHost"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:ems="10"
-            android:text="192.168.1.42" >
+            android:text="192.168.71.10" >
 
             <requestFocus />
         </EditText>
-
+        </TableRow>
+        
+        <TableRow>
         <TextView
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Port" />
+        </TableRow>
+        
+        <TableRow>
 
         <EditText
             android:id="@+id/editPort"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:ems="10"
             android:inputType="number"
             android:text="9042" />
 
+        </TableRow>
+        
+        <TableRow>
+
         <Button
             android:id="@+id/connectButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Connect" />
 
+        </TableRow>
+        
     </TableLayout>
