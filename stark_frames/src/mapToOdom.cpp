@@ -27,10 +27,6 @@ int main(int argc, char* argv[])
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 {
     tf::StampedTransform odomToBase, gpsToMap;
-    tf::Vector3 pos;
-    tf::Quaternion quat;
-    
-    quat.setRPY(0, 0, msg->theta);
     
     ros::Time now = ros::Time::now();
     
@@ -54,13 +50,15 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
         ROS_ERROR("%s",ex.what());
     }
     
-    pos.setX(msg->x - gpsToMap.getOrigin().x());
-    pos.setY(msg->y - gpsToMap.getOrigin().y());
+    tf::Quaternion MBR;
+    MBR.setEuler(msg->theta, 0, 0);
     
-    quat = quat * odomToBase.getRotation().inverse();
-    pos = pos - odomToBase.getOrigin();
+    tf::Transform MB(MBR, tf::Point(msg->x - gpsToMap.getOrigin().x(), msg->y - gpsToMap.getOrigin().y(), 0.0));
     
-    tf::Transform mapToOdom(quat - odomToBase.getRotation(), pos);
+    tf::Transform OBRI(odomToBase.getRotation().inverse(), tf::Point(0, 0, 0));
     
-    tfBroadcaster->sendTransform(tf::StampedTransform(mapToOdom, now, "/map", "/odom"));
+    tf::Transform OBTI(tf::Quaternion(0, 0, 0, 1), 
+                       odomToBase.getOrigin() * -1.0);
+    
+    tfBroadcaster->sendTransform(tf::StampedTransform(OBTI * OBRI * MB, now, "/map", "/odom"));
 }
