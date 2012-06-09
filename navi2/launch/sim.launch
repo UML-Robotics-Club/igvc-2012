@@ -51,16 +51,16 @@
             <remap from="output" to="FilteredLocalPath"/>
         </node>
         
-        <node name="woah" pkg="navi2" type="woah.py">
+        <!--node name="woah" pkg="navi2" type="woah.py">
             <remap from="inputPath" to="FilteredLocalPath"/>
             <remap from="output" to="cmd_vel"/>
             <remap from="inputLaser" to="woahLaser"/>
-        </node>
+        </node-->
         
-        <!--node name="woah" pkg="woah_scheme" type="woah_scheme">
+        <node name="woah" pkg="woah_scheme" type="woah_scheme">
             <remap from="path" to="FilteredLocalPath"/>
             <remap from="base_scan" to="woahLaser"/>
-        </node-->
+        </node>
     </group>
 </launch>
 
