@@ -50,8 +50,10 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
         ROS_ERROR("%s",ex.what());
     }
     
-    tf::Transform MB(tf::Quaternion(0, 0, 0, 1),
-                     tf::Point(msg->x - gpsToMap.getOrigin().x(), msg->y - gpsToMap.getOrigin().y(), 0.0));
+    tf::Quaternion MBR;
+    MBR.setEuler(msg->theta, 0, 0);
+    
+    tf::Transform MB(MBR, tf::Point(msg->x - gpsToMap.getOrigin().x(), msg->y - gpsToMap.getOrigin().y(), 0.0));
     
     tf::Transform OBRI(odomToBase.getRotation().inverse(), tf::Point(0, 0, 0));
     
