@@ -18,7 +18,7 @@ class ToLaserScan {
 
 public:
     ToLaserScan() : it(n){
-        it_sub = it.subscribe("cam_segment", 1, &ToLaserScan::got_frame, this);
+        it_sub = it.subscribe("cam_bird", 1, &ToLaserScan::got_frame, this);
         scan_pub = n.advertise<sensor_msgs::LaserScan>("cam_laser", 50);
     }
 
