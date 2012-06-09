@@ -13,7 +13,7 @@ import copy
 import kalman
 from stark_driver.msg import EncoderStamped
 from geometry_msgs.msg import PoseStamped
-
+from tf.transformations import quaternion_from_euler
 # Robot Constants
 AXLE_LENGTH = 0.6604
 WHEEL_RADIUS = 0.12065 # 9.5in diameter wheels
@@ -76,10 +76,12 @@ def motion_model(left_vel, right_vel, dt):
         x = new_frame[0,0]
         y = new_frame[1,0]
         theta_p = new_frame[2,0]
-        qx = math.cos(theta_p/2)
-        qy = 0
-        qz = 0
-        qw = math.sin(theta_p/2)
+        
+        (qx, qy, qz, qw) = quaternion_from_euler(0,0,theta_p)
+        #qx = math.cos(theta_p/2)
+        #qy = 0
+        #qz = 0
+        #qw = math.sin(theta_p/2)
     return ((x,y,0), (qx, qy, qz, qw))
 
 if __name__ == '__main__':
