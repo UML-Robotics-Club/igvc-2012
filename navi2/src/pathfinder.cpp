@@ -31,6 +31,8 @@ void SearchNodeCmp::SetTarget(int xt, int yt)
 
 Pathfinder::Pathfinder(ros::NodeHandle& nh) : m_nh(nh)
 {
+    initTfHelper();
+    
     double xx, yy, dc;
     
     getTransform("/map", "/base_link", ros::Time::now(), ros::Duration(5.0), xx, yy, dc);

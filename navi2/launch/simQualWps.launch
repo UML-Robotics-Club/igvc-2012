@@ -1,0 +1,12 @@
+<!-- -*- xml -*- -->
+<launch>
+    <param name="/use_sim_time" value="true"/>
+    
+    <group ns="robot">
+        <node name="qualWps" pkg="navi2" type="qualWps" args="$(find navi2)/qual.wps" output="screen">
+            <remap from="output" to="goal"/>
+        </node>
+    </group>
+</launch>
+
+<!-- launch-prefix="xterm -e gdb - -args" -->
