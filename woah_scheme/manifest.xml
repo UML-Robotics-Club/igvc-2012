@@ -1,0 +1,18 @@
+<package>
+  <description brief="woah_scheme">
+
+     woah_scheme
+
+  </description>
+  <author>Nat Tuck</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/woah_scheme</url>
+  <depend package="roscpp"/>
+  <depend package="nav_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="tf"/>
+</package>
+
+

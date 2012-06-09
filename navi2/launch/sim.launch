@@ -46,15 +46,14 @@
             <rosparam command="load" file="$(find navi2)/noInflationMap.yaml"/>
         </node>
         
-        <node name="pathFilterer" pkg="navi2" type="pathFilter.py" output="screen">
+        <node name="pathFilterer" pkg="navi2" type="pathFilter.py">
             <remap from="input" to="localPath"/>
             <remap from="output" to="FilteredLocalPath"/>
         </node>
         
-        <node name="woah" pkg="navi2" type="woah.py">
-            <remap from="inputPath" to="FilteredLocalPath"/>
-            <remap from="inputLaser" to="woahLaser"/>
-            <remap from="output" to="cmd_vel"/>
+        <node name="woah" pkg="woah_scheme" type="woah_scheme" output="screen">
+            <remap from="path" to="FilteredLocalPath"/>
+            <remap from="base_scan" to="woahLaser"/>
         </node>
     </group>
 </launch>

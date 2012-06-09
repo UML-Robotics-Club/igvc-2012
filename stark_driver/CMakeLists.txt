@@ -43,8 +43,8 @@ target_link_libraries(light_test qc_serial)
 rosbuild_add_executable(gps_test src/pose/gps_test.cc src/pose/CalcUTM.cc src/pose/llutm.cc src/pose/GpsProxy.cc)
 target_link_libraries(gps_test qc_serial pcrecpp gps)
 
-rosbuild_add_executable(pose_driver src/pose/CalcUTM.cc src/pose/pose_driver.cc src/pose/GpsProxy.cc src/pose/llutm.cc)
-target_link_libraries(pose_driver qc_serial pcrecpp gps)
+rosbuild_add_executable(pose_driver src/pose/CalcUTM.cc src/pose/pose_driver.cc src/pose/GpsProxy.cc src/pose/llutm.cc src/pose/robot_ekf.cpp)
+target_link_libraries(pose_driver qc_serial pcrecpp gps kalman)
 
 #rosbuild_add_executable(calibrate src/compass/calibrate.cc  src/compass/PhidgetCompass.cc)
 #target_link_libraries(calibrate phidget21)

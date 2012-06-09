@@ -90,7 +90,8 @@ def got_scan(msg):
         ga, gv = command['theta'], command['speed']
         (sp, tu) = woah.woah_ahead(ga, gv, msg)
         #print "WOAH:", ga, gv, " => ", sp, tu
-        set_speeds(sp, tu)
+        if gv > 0.05 || ga > 0.05:
+            set_speeds(sp, tu)
 
 class PacketHandler(SocketServer.BaseRequestHandler):
     def handle(self):

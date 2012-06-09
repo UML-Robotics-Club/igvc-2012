@@ -7,7 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE RelWithDebInfo)
+#set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 
@@ -23,8 +23,13 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-rosbuild_add_executable(mapToOdom src/mapToOdom.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+include($ENV{ROS_ROOT}/core/rosbuild/FindPkgConfig.cmake)
+pkg_check_modules(GUILE REQUIRED guile-2.0)
+
+set(CMAKE_CXX_FLAGS "-I/usr/local/include/guile/2.0 -L/usr/local/lib -DPACKAGE_PATH=\\\"${PROJECT_SOURCE_DIR}\\\"")
+
+rosbuild_add_executable(woah_scheme src/woah_scheme.cc src/transform.cc)
+target_link_libraries(woah_scheme "guile-2.0")
+target_link_libraries(woah_scheme "gc")

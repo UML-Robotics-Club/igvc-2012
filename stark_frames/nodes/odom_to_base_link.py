@@ -36,7 +36,7 @@ def handle_encoder_msg(msg):
     left_meas_vel = msg.left_ticks * WHEEL_CIRC / TWO_PI_TICKS / dt
     right_meas_vel = msg.right_ticks * WHEEL_CIRC / TWO_PI_TICKS / dt
     pos, orientation = motion_model(left_meas_vel, right_meas_vel, dt)
-    br.sendTransform(pos, orientation, rospy.Time.now(), "/odom", "/gps")
+    br.sendTransform(pos, orientation, rospy.Time.now(), "/base_link", "/odom")
     prev_time_stamp = msg.header.stamp
 
 # Forward kinematics for differential drive robots

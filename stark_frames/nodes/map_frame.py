@@ -18,8 +18,8 @@ def handle_pose_msg(msg):
     br.sendTransform((x,y,0), 
                      (qx,qy,qz,qw),
                      rospy.Time.now(),
-                     "/gps",
-                     "/map")
+                     "/map",
+                     "/gps")
 
 if __name__ == '__main__':
     rospy.init_node("map_node")
