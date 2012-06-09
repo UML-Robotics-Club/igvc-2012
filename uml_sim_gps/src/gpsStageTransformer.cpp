@@ -21,8 +21,8 @@ void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg);
 
 int main(int argc, char* argv[])
 {
-    pjLatLon = pj_init_plus("+proj=latlong +ellps=WGS84");
-    pjUTM = pj_init_plus("+proj=utm +zone=19T +ellps=WGS84");
+    pjLatLon = pj_init_plus("+proj=latlong +datum=WGS84");
+    pjUTM = pj_init_plus("+proj=utm +zone=19 +datum=WGS84");
     
     baseX = -71.323866 / 180 * M_PI;
     baseY = 42.656516  / 180 * M_PI;

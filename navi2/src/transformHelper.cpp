@@ -1,9 +1,14 @@
 #include "transformHelper.hpp"
 
+static tf::TransformListener* tfListener;
+
+void initTfHelper()
+{
+    tfListener = new tf::TransformListener();
+}
+
 void getTransform(std::string to, std::string from, ros::Time time, ros::Duration duration, double& x, double& y, double& yaw)
 {
-    static tf::TransformListener* tfListener = new tf::TransformListener();
-    
     tf::StampedTransform transform;
     try
     {

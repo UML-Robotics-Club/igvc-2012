@@ -10,8 +10,9 @@ public:
   void SetProcVar(double x, double y, double theta);
   void SetMeasGain(double x, double y, double theta);
   void SetMeasVar(double x, double y, double theta);
-  void Update(double meas_x, double meas_y, double meas_theta,
-	      double ctrl_x, double ctrl_y, double ctrl_theta);
+  bool isInitialized(){return initialized;}
+  void InitVals(double meas_x, double meas_y, double meas_theta,
+			  double ctrl_x, double ctrl_y, double ctrl_theta);
 protected:
   void makeA();
   void makeH();
@@ -26,6 +27,7 @@ private:
   double proc_var_x, proc_var_y, proc_var_theta;
   double meas_gain_x, meas_gain_y, meas_gain_theta;
   double meas_var_x, meas_var_y, meas_var_theta;
+  bool initialized;
 };
 
 //typedef RobotEKF::Vector Vector;

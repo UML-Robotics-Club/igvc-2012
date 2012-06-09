@@ -32,6 +32,8 @@ int main(int argc, char* argv[])
     ros::init(argc, argv, "LaserMapper");
     ros::NodeHandle nh;
     
+    initTfHelper();
+    
     laserGrid =  new nav_msgs::OccupancyGrid();
     
     laserGrid->info.origin.position.x = 0;

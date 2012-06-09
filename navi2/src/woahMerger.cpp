@@ -30,6 +30,8 @@ int main(int argc, char* argv[])
     ros::init(argc, argv, "WOAHMerger");
     ros::NodeHandle nh;
     
+    initTfHelper();
+    
     ros::param::param<double>("~laserRange", rosParams.laserRange, 8.0);
     ros::param::param<double>("~inflationRadius", rosParams.inflationRadius, 0.6);
     

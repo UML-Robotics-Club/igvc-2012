@@ -5,6 +5,7 @@
 #include <map>
 #include <libgpsmm.h>
 #include "robot_ekf.hpp"
+#include <tf/transform_listener.h>
 
 // GpsProxy connects to a gpsd handling multiple GPS
 // devices and combines all the data into one position
@@ -29,6 +30,10 @@ class GpsProxy {
     std::map<std::string,struct gps_data_t> data;
     gpsmm* gps;
     std::ofstream fout_gps; // file to optain raw gps x,y data
+    std::ofstream fout_kf_gps;
+    RobotEKF gps0_ekf;
+    RobotEKF gps1_ekf;
+    tf::TransformListener tf_listener;
 };
 
 #endif
