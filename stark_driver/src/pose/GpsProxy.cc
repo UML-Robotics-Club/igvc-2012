@@ -29,7 +29,7 @@ GpsProxy::update()
     struct gps_data_t* msg;
     msg = gps->poll();
     double y = utm_north(msg->fix.latitude, msg->fix.longitude);
-    double x = utm_east(msg->fix.latitude, msg->fix.longitude);
+    double x = -utm_east(msg->fix.latitude, msg->fix.longitude); // wrong
     std::string path(msg->dev.path);
     fout_gps << path << " " << x << " " << y << endl;
 
@@ -76,7 +76,7 @@ GpsProxy::position()
     lon /= total_sats;
 
     pos.utm_n = utm_north(lat, lon);
-    pos.utm_e = utm_east(lat, lon);
+    pos.utm_e = -utm_east(lat, lon); // wrog
     pos.lat   = lat;
     pos.lon   = lon;
 
