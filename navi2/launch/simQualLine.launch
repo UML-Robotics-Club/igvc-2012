@@ -1,0 +1,12 @@
+<!-- -*- xml -*- -->
+<launch>
+    <param name="/use_sim_time" value="true"/>
+    
+    <group ns="robot">
+        <node name="qualLine" pkg="navi2" type="qualLine">
+            <remap from="output" to="goal"/>
+        </node>
+    </group>
+</launch>
+
+<!-- launch-prefix="xterm -e gdb - -args" -->

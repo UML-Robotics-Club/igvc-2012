@@ -31,6 +31,20 @@ static SCM woah;
 
 static uint16_t next_line_id = 0;
 
+double
+normalize_angle(double theta)
+{
+    while (theta < M_PI) {
+        theta += 2 * M_PI;
+    }
+
+    while (theta > M_PI) {
+        theta -= 2 * M_PI;
+    }
+
+    return theta;
+}
+
 void
 draw_line(const char* frame_id, double xx, double yy, double tt, 
     double ss, double rr, double gg, double bb)
@@ -98,7 +112,7 @@ got_scan(const LaserScan::ConstPtr& msg)
     double dy = goal.pose.position.y - yy;
     double dx = goal.pose.position.x - xx;
 
-    double goal_alpha = atan2(dy, dx) - tt;
+    double goal_alpha = normalize_angle(atan2(dy, dx) - tt);
     double goal_dist  = hypot(dx, dy);
 
     // Build list of pairs.
@@ -122,6 +136,7 @@ got_scan(const LaserScan::ConstPtr& msg)
 
         speed = scm_to_double(scm_car(cmd_pair));
         rotsp = scm_to_double(scm_cdr(cmd_pair));
+        //printf("Goal alpha: %.02f => Rotsp: %.02f\n", goal_alpha, rotsp);
     }
 
     // Send the motor command.
