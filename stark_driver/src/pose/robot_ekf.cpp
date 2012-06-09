@@ -161,3 +161,18 @@ void RobotEKF::SetMeasVar(double x, double y, double theta)
   meas_var_y = y;
   meas_var_theta = theta;
 }
+
+void Update(double meas_x, double meas_y, double meas_theta,
+	    double ctrl_x, double ctrl_y, double ctrl_theta)
+{
+  RobotEKF::Vector u(3);
+  RobotEKF::Vector z(3);
+  
+  u(1) = ctrl_x;
+  u(2) = ctrl_y;
+  u(3) = ctrl_theta;
+  z(1) = meas_x;
+  z(2) = meas_y;
+  z(3) = meas_theta;
+  //step(u,z);
+}
