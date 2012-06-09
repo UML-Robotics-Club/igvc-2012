@@ -16,22 +16,22 @@ def main():
     global ser, pub
     while 1:
         msg = ser.readline().split(",");
-        yaw   = float(msg[1]);
-        pitch = float(msg[2]);
-        roll  = float(msg[3]);
-        #out = quaternion_from_euler(roll,pitch,yaw)#,'rxyz')
-        out = quaternion_from_euler(0,0,yaw)#,'rxyz')
-
+        degrees = float(msg[1])
+        radians = degrees * math.pi / 180.0 + math.pi / 2.0 # east is 0
+        if radians > math.pi:
+            radians = -(radians - math.pi)
+        
+        (qx, qy, qz, qw) = quaternion_from_euler(0,0,radians)
 	msg = QuaternionStamped()
 	msg.header.stamp = rospy.Time.now()
         msg.header.frame_id = 'base_link'
-        msg.quaternion.x = out[0]
-        msg.quaternion.y = out[1]
-        msg.quaternion.z = out[2]
-        msg.quaternion.w = out[3]
+        msg.quaternion.x = qx
+        msg.quaternion.y = qy
+        msg.quaternion.z = qz
+        msg.quaternion.w = qw
 
         pub.publish(msg)
-
+        ser.flush()
         #print("Heading (ypr):", yaw, pitch, roll)
 
 if __name__ == '__main__':
