@@ -55,7 +55,7 @@ def main():
         
             
 def clearCrumb(path, crumb):
-        
+    print 'CLEARCRUMB: ' + str((len(path.poses), crumb))
     if math.sqrt((path.poses[-1].pose.position.x - crumb[0]) ** 2.0 + 
                  (path.poses[-1].pose.position.y - crumb[1]) ** 2.0) < 0.8:
         path.poses = path.poses[0:-1]
