@@ -24,6 +24,9 @@
 (define (sign n)
   (if (> n 0.0) 1.0 -1.0))
 
+(define (clamp n n0 n1)
+  (max (min n n1) n0))
+
 (define (d w α θ)
   (if (> θ α)
      (d w (* -1.0 α) (* -1.0 θ))
@@ -61,7 +64,12 @@
          (* (cos α) MAX_SPEED))))
 
 (define (turn-speed α)
-    (min MAX_TURN_SPEED (* (sin α) MAX_TURN_SPEED 1.5)))
+  (* (sign α)
+     MAX_TURN_SPEED
+     (expt (* (abs (/ α π)) 2.0) (/ 1.0 TURN_INTENSITY))))
+
+(define (turn-speed α)
+  (clamp (* (sin α) MAX_TURN_SPEED 1.5) (- MAX_TURN_SPEED) MAX_TURN_SPEED))
 
 (define (goal-progress w goal-α goal-distance α ranges)
   (* (min goal-distance (min-dist (+ EXTRA_MARGIN w) α α ranges))

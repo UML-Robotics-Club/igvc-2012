@@ -57,7 +57,7 @@
             <remap from="inputLaser" to="woahLaser"/>
         </node-->
         
-        <node name="woah" pkg="woah_scheme" type="woah_scheme">
+        <node name="woah" pkg="woah_scheme" type="woah_scheme" output="screen">
             <remap from="path" to="FilteredLocalPath"/>
             <remap from="base_scan" to="woahLaser"/>
         </node>
