@@ -60,7 +60,7 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     quat = quat * odomToBase.getRotation().inverse();
     pos = pos - odomToBase.getOrigin();
     
-    tf::Transform mapToOdom(quat, pos);
+    tf::Transform mapToOdom(quat - odomToBase.getRotation(), pos);
     
     tfBroadcaster->sendTransform(tf::StampedTransform(mapToOdom, now, "/map", "/odom"));
 }
