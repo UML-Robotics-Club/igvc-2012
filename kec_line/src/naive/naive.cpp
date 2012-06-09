@@ -103,8 +103,8 @@ void raycast(Mat* in, sensor_msgs::LaserScan& scan){
     scan.range_min = RANGE_MIN;
     scan.range_max = RANGE;
 
-    scan.set_ranges_size(res);
-    scan.set_intensities_size(res);
+    scan.set_ranges_size(115-60);
+    scan.set_intensities_size(115-60);
 
     //build dataset
     double theta;
@@ -155,15 +155,17 @@ void sexysegment(Mat* in, Mat* out){
     addWeighted(bgr[0], 2.0, bgr[1], -1.0, 0, gray);
     addWeighted(gray, 2.0, bgr[2], -1.0, 0, gray);
 
+    /*
     for(int j=0; j<in->rows/3; j++){
         for(int i=0; i<in->cols; i++){
             gray.at<uint8_t>(j,i) = 0;
         }
     }
+    */
 
     
 
-    Mat mystruct = getStructuringElement(MORPH_RECT, Size(15,15));
+    Mat mystruct = getStructuringElement(MORPH_RECT, Size(37,37));//15
     morphologyEx(gray, temp, MORPH_TOPHAT, mystruct, Point(-1,-1), 1);
     adaptiveThreshold(temp, gray, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 43, -5 );
 
@@ -180,16 +182,17 @@ void sexysegment(Mat* in, Mat* out){
     for(unsigned int i=0; i<v.size(); i++){
         RotatedRect r = minAreaRect(v[i]);
 
-        if( (r.size.width / r.size.height > 1.0 ||
-            r.size.height / r.size.width > 1.0) &&
-            (r.size.height > 50 ||
-             r.size.width > 50)){
+        if( (r.size.width / r.size.height > 1.5 ||
+            r.size.height / r.size.width > 1.5) &&
+            (r.size.height > 0 ||
+             r.size.width > 0)){ //50
             vb.push_back(v[i]);
         }
     }
 
     *out = Mat::zeros(out->size(), out->type());
-    drawContours(*out, vb, -1, Scalar(255,255,255), -1);
+    //bw out
+    //drawContours(*out, vb, -1, Scalar(255,255,255), -1);
             
 
     //for(int j=0; j<gray.rows; j++){
@@ -198,27 +201,29 @@ void sexysegment(Mat* in, Mat* out){
         //}
     //}
     //*out = in->clone();
-    //drawContours(*out, vb, -1, Scalar(255,0,0), -1);
     //drawContours(gray, vb, -1, Scalar(255,255,255), -1);
     
 
-    /*
+    
+    gray = Mat::zeros(gray.size(), gray.type());
+    drawContours(gray, vb, -1, Scalar(255,255,255), -1);
     //hough
     std::vector<Vec4i> lines;
-    HoughLinesP(gray, lines, 1, CV_PI/180, 80, 60, 10);
+    HoughLinesP(gray, lines, 1, CV_PI/180, 60, 60, 10);
     //HoughLinesP(gray, lines, 1, CV_PI/180, 120, 100, 5);
 
     for(size_t i=0; i<lines.size(); i++){
         line(*out, Point(lines[i][0], lines[i][1]), Point(lines[i][2], lines[i][3]), Scalar(255,255,255), 3, 8);
     }
 
+    /*
     color transform
     *out = in->clone();
-    drawContours(*out, v, -1, Scalar(255,0,0), -1);
+    drawContours(*out, vb, -1, Scalar(255,0,0), -1);
       
-    for(size_t i=0; i<lines.size(); i++){
+    for(size_t i=0; i<lines.size(); i++)
         line(*out, Point(lines[i][0], lines[i][1]), Point(lines[i][2], lines[i][3]), Scalar(0,0,255), 3, 8);
-    }*/
+*/
 }
 
 

@@ -11,7 +11,8 @@
 #define RANGE_MIN   1.35
 /*0.46*/
 #define SCAN_RES    55
-#define PPM         105.0
+//#define PPM         105.0
+#define PPM         100.0
 #define ORIGIN_X    191
 #define ORIGIN_Y    614 
 /*479*/

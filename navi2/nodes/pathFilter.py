@@ -32,8 +32,7 @@ def main():
         
         if newPath:
             modPath = lastPath
-            if (len(modPath.poses) > 1):
-                modPath = reduce(clearCrumb, crumbs, modPath)
+            modPath = reduce(clearCrumb, crumbs, modPath)
             newPath = False
             crumbs = []
         
@@ -46,8 +45,7 @@ def main():
         
         crumbs.append(trans)
         
-        if (len(modPath.poses) > 1):
-            modPath = clearCrumb(modPath, crumbs[-1])
+        modPath = clearCrumb(modPath, crumbs[-1])
             
         if (modPath.header.frame_id != ''):
             pathPub.publish(modPath)
@@ -55,10 +53,9 @@ def main():
         
             
 def clearCrumb(path, crumb):
-    print 'CLEARCRUMB: ' + str((len(path.poses), crumb))
-    if math.sqrt((path.poses[-1].pose.position.x - crumb[0]) ** 2.0 + 
-                 (path.poses[-1].pose.position.y - crumb[1]) ** 2.0) < 0.8:
-        path.poses = path.poses[0:-1]
+    if (len(path.poses) > 1):
+        if math.sqrt((path.poses[-1].pose.position.x - crumb[0]) ** 2.0 + (path.poses[-1].pose.position.y - crumb[1]) ** 2.0) < 0.8:
+            path.poses = path.poses[0:-1]
         
     return path
     
