@@ -50,7 +50,7 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
         ROS_ERROR("%s",ex.what());
     }
     
-    tf::Quaternion MBR;
+    /*tf::Quaternion MBR;
     MBR.setEuler(msg->theta, 0, 0);
     
     tf::Transform MB(MBR, tf::Point(msg->x - gpsToMap.getOrigin().x(), msg->y - gpsToMap.getOrigin().y(), 0.0));
@@ -60,5 +60,19 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     tf::Transform OBTI(tf::Quaternion(0, 0, 0, 1), 
                        odomToBase.getOrigin() * -1.0);
     
-    tfBroadcaster->sendTransform(tf::StampedTransform(OBTI * OBRI * MB, now, "/map", "/odom"));
+    tfBroadcaster->sendTransform(tf::StampedTransform(OBTI * OBRI * MB, now, "/map", "/odom"));*/
+    
+    tf::Vector3 pos;
+    pos.setX(msg->x - gpsToMap.getOrigin().x());
+    pos.setY(msg->y - gpsToMap.getOrigin().y());
+    
+    tf::Quaternion quat;
+    quat.setRPY(0, 0, msg->theta);
+    
+    quat = quat * odomToBase.getRotation().inverse();
+    pos = pos - odomToBase.getOrigin();
+    
+    tf::Transform mapToOdom(quat, pos);
+    
+    tfBroadcaster->sendTransform(tf::StampedTransform(mapToOdom, now, "/map", "/odom"));
 }
