@@ -19,12 +19,13 @@ def conv(line):
     lat = int(line[dLat])+int(line[mLat])/60.0+float(line[sLat])/3600.0
     lon =  int(line[dLon])+int(line[mLon])/60.0+float(line[sLon])/3600.0
     lon *= -1.0
+    print lat,lon
     #gps.write(str(lat) + "," + str(lon) + "\n");
     llToUTM(lat,lon)
 
 # Open input/output files
-f=open('coords.txt');
-gps = open('gps.csv', 'w');
+f=open('course1.txt');
+gps = open('gps1.csv', 'w');
 
 # Setup proj for right location
 utm = pyproj.Proj(proj='utm', zone=17, datum='WGS84')
