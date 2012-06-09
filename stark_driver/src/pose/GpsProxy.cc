@@ -49,7 +49,7 @@ GpsProxy::update()
     u(3) = 0; // no compass
     z(3) = 0;
     msg = gps->poll();
-    z(1) = -utm_east(msg->fix.latitude, msg->fix.longitude); // wrong
+    z(1) = utm_east(msg->fix.latitude, msg->fix.longitude); 
     z(2) = utm_north(msg->fix.latitude, msg->fix.longitude);
     std::string path(msg->dev.path);
     fout_gps << path << " " << z(1) << " " << z(1) << endl;
@@ -140,7 +140,7 @@ GpsProxy::position()
     }
     else{
       pos.utm_n = utm_north(lat, lon);
-      pos.utm_e = -utm_east(lat, lon); // wrong
+      pos.utm_e = utm_east(lat, lon);
     }
     pos.lat   = lat;
     pos.lon   = lon;
