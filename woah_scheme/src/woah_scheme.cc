@@ -161,6 +161,10 @@ main(int argc, char* argv[])
     ros::init(argc, argv, "woah_scm");
     ros::NodeHandle node;
 
+    char tmp[10];
+    printf("Press ENTER to continue...\n");
+    fgets(tmp, 10, stdin);
+
     ros::Publisher cv_ = node.advertise<Twist>("cmd_vel", 0);
     cmd_vel = &cv_;
     ros::Publisher vp_ = node.advertise<Marker>("visualization_marker", 0);
