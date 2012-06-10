@@ -16,11 +16,20 @@ def main():
     global ser, pub
     while 1:
         msg = ser.readline().split(",");
-        degrees = float(msg[1])
-        radians = degrees * math.pi / 180.0 + math.pi / 2.0 # east is 0
-        if radians > math.pi:
-            radians = -(radians - math.pi)
         
+	print "Compass line:", msg
+
+	degrees = float(msg[1])
+        radians = degrees * math.pi / 180.0 + math.pi / 2.0 # east is 0
+
+        radians = -(radians + math.pi) 
+
+        while radians > math.pi:
+            radians = radians - 2*math.pi
+        
+	while radians < -math.pi:
+            radians = radians + 2*math.pi
+
         (qx, qy, qz, qw) = quaternion_from_euler(0,0,radians)
 	msg = QuaternionStamped()
 	msg.header.stamp = rospy.Time.now()
@@ -31,7 +40,7 @@ def main():
         msg.quaternion.w = qw
 
         pub.publish(msg)
-        ser.flush()
+        #ser.flush()
         #print("Heading (ypr):", yaw, pitch, roll)
 
 if __name__ == '__main__':
