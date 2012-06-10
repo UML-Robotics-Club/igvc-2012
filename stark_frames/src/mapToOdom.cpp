@@ -8,6 +8,7 @@
 
 tf::TransformListener* tfListener;
 tf::TransformBroadcaster* tfBroadcaster;
+tf::Transform newestTrans;
 
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
 
@@ -21,7 +22,14 @@ int main(int argc, char* argv[])
     tfListener = new tf::TransformListener();
     tfBroadcaster = new tf::TransformBroadcaster();
     
-    ros::spin();
+    ros::Rate rate(10);
+    
+    while (ros::ok())
+    {
+        rate.sleep();
+        ros::spinOnce();
+        tfBroadcaster->sendTransform(tf::StampedTransform(newestTrans, ros::Time::now(), "/map", "/odom"));
+    }
 }
 
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
@@ -62,5 +70,5 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     
     tf::Transform mapToOdom(quat, pos);
     
-    tfBroadcaster->sendTransform(tf::StampedTransform(mapToOdom, now, "/map", "/odom"));
+    newestTrans = mapToOdom;
 }
