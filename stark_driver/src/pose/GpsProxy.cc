@@ -26,8 +26,13 @@ GpsProxy::GpsProxy()
 
     fout_gps.open("raw_gps.txt");
     fout_kf_gps.open("filt_gps.txt");
+    fout_encoder_pos.open("encoder_pos.txt");
     fout_gps << std::setprecision(9);
     fout_kf_gps << std::setprecision(9);
+    fout_encoder_pos << std::setprecision(9);
+
+    encoder_x_pos = 0;
+    encoder_y_pos = 0;
 }
 
 GpsProxy::~GpsProxy()
@@ -36,6 +41,7 @@ GpsProxy::~GpsProxy()
     delete gps;
     fout_gps.close();
     fout_kf_gps.close();
+    fout_encoder_pos.close();
 }
 
 void
@@ -56,25 +62,35 @@ GpsProxy::update()
     if(!(z(1) != z(1) || z(2) != z(2))){ // test for nan (will not work with fastmath enabled)
       tf::StampedTransform odom_tf;
       try{
-	tf_listener.lookupTransform("/odom", "/gps", 
+	tf_listener.lookupTransform("/odom", "/base_link", 
 				    ros::Time(0), odom_tf);
 	u(1) = odom_tf.getOrigin().x();
 	u(2) = odom_tf.getOrigin().y();
 	if(!(u(1) != u(1) || u(2) != u(2))){
-	  //btMatrix3x3(odom_tf.getRotation()).getRPY(roll,pitch,ctrl_theta);
 	  if(!path.compare("/dev/ttyGPS0")){
 	    if(gps0_ekf.isInitialized()){
-	      gps0_ekf.step(u,z);
+	      gps0_ekf.step(u,z); // correct
+	      //gps0_ekf.step(z,z); // incorrect
 	      x = gps0_ekf.getX();
 	      fout_kf_gps << path << " " << x(1) << " " << z(1) 
 			  << " " << x(2) << " " << z(2) << std::endl;
+	      encoder_x_pos += u(1);
+	      encoder_y_pos += u(2);
+	      fout_encoder_pos << encoder_x_pos << " " 
+			       << encoder_y_pos << std::endl;
 	    }
-	    else
+	    else{
 	      gps0_ekf.InitVals(z(1), z(2), z(3), u(1), u(2), u(3));
+	      encoder_x_pos = z(1);
+	      encoder_y_pos = z(2);
+	      fout_encoder_pos << encoder_x_pos << " " 
+			       << encoder_y_pos << std::endl;
+	    }
 	  }
 	  else if(!path.compare("/dev/ttyGPS1")){
 	    if(gps1_ekf.isInitialized()){
-	      gps1_ekf.step(u,z);
+	      gps1_ekf.step(u,z); // correct
+	      //gps1_ekf.step(z,z); // incorrect
 	      x = gps1_ekf.getX();
 	      fout_kf_gps << path << " " << x(1) << " " << z(1) 
 			  << " " << x(2) << " " << z(2) << std::endl;

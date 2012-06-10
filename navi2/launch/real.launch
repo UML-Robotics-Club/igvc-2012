@@ -19,7 +19,7 @@
         </node>
         
         <node name="navi2" pkg="navi2" type="navi2">
-            <remap from="inputMap" to="mergedMap"/>
+            <remap from="inputMap" to="laserMap"/>
             <remap from="inputGoal" to="goal"/>
             <remap from="output" to="localPath"/>
             <rosparam command="load" file="$(find navi2)/navi2.yaml"/>

@@ -31,9 +31,11 @@ class GpsProxy {
     gpsmm* gps;
     std::ofstream fout_gps; // file to optain raw gps x,y data
     std::ofstream fout_kf_gps;
+    std::ofstream fout_encoder_pos;
     RobotEKF gps0_ekf;
     RobotEKF gps1_ekf;
     tf::TransformListener tf_listener;
+    double encoder_x_pos, encoder_y_pos; // for testing control data
 };
 
 #endif
