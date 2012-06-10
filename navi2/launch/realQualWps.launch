@@ -1,7 +1,8 @@
 <!-- -*- xml -*- -->
 <launch>
     <group ns="robot">
-        <node name="qualLine" pkg="navi2" type="qualLine">
+        <group ns="robot">
+        <node name="qualWps" pkg="navi2" type="qualWps" args="$(find navi2)/qual.wps" output="screen">
             <remap from="output" to="goal"/>
         </node>
 
