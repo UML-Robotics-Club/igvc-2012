@@ -63,7 +63,8 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     pos.setY(msg->y - gpsToMap.getOrigin().y());
     
     tf::Quaternion quat;
-    quat.setRPY(0, 0, msg->theta);
+    //quat.setRPY(0, 0, msg->theta);
+    quat.setRPY(0, 0, 0);
     
     /*quat = quat * odomToBase.getRotation().inverse();
     pos = pos - odomToBase.getOrigin();*/
