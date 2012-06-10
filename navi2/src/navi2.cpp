@@ -50,8 +50,8 @@ void goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
     double xx, yy, yaw;
     getTransform("/map", msg->header.frame_id, msg->header.stamp, ros::Duration(1.0), xx, yy, yaw);
     
-    pather->SetTarget(xx + cos(yaw) * msg->pose.position.x + sin(yaw) * msg->pose.position.y, 
-                      yy - sin(yaw) * msg->pose.position.x + cos(yaw) * msg->pose.position.y);
+    pather->SetTarget(xx + cos(yaw) * msg->pose.position.x + -sin(yaw) * msg->pose.position.y, 
+                      yy + sin(yaw) * msg->pose.position.x +  cos(yaw) * msg->pose.position.y);
 }
 
 void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
