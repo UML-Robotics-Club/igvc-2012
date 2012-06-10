@@ -1,4 +1,4 @@
-(define MAX_SPEED         2.0)
+(define MAX_SPEED         1.0)
 (define MAX_TURN_SPEED    0.6)
 (define ROBOT_WIDTH       0.8)
 (define SAFETY_MARGIN     0.4)

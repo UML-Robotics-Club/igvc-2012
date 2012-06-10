@@ -1,7 +1,7 @@
 <launch>
    <node pkg="ocean_driver" type="osdriver.py" name="osdriver" 
-            output="screen" respawn="true" />
+            respawn="true" />
 
     <node pkg="stark_driver" type="pose_driver" name="pose_driver"
-            output="screen" respawn="true" ns="robot" />
+            respawn="true" ns="robot" />
 </launch>

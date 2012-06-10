@@ -86,12 +86,12 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
         int xh = xr + cos(phi + yaw) * mapDist;
         int yh = yr + sin(phi + yaw) * mapDist;
         
-        if (inBounds(xh, yh) && msg->ranges[ii] < rosParams.laserRange)
+        if (inBounds(xh, yh) && msg->ranges[ii] < rosParams.laserRange && msg->ranges[ii] > msg->range_min)
         {
             inflateObstacle(xh, yh);
         }
         
-        if (msg->ranges[ii] - rosParams.inflationRadius > 0.0)
+        if (msg->ranges[ii] - rosParams.inflationRadius > 0.0 && msg->ranges[ii] > msg->range_min)
         {
             raytrace(xr, yr, cos(phi + yaw), sin(phi + yaw), mapDist - rosParams.inflationRadius / laserGrid->info.resolution);
         }
