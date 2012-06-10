@@ -19,7 +19,8 @@ int main(int argc, char* argv[])
     ros::init(argc, argv, "mapToOdom");
     ros::NodeHandle nh;
     
-    ros::Subscriber poseSub = nh.subscribe("input", 0, poseCallback);
+    ros::Subscriber compSub = nh.subscribe("inputCompass", 0, rotCallback);
+    ros::Subscriber poseSub = nh.subscribe("inputGPS", 0, poseCallback);
     
     tfListener = new tf::TransformListener();
     tfBroadcaster = new tf::TransformBroadcaster();
