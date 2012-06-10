@@ -62,14 +62,15 @@ GpsProxy::update()
     if(!(z(1) != z(1) || z(2) != z(2))){ // test for nan (will not work with fastmath enabled)
       tf::StampedTransform odom_tf;
       try{
-	tf_listener.lookupTransform("/odom", "/gps", 
+	tf_listener.lookupTransform("/odom", "/base_link", 
 				    ros::Time(0), odom_tf);
 	u(1) = odom_tf.getOrigin().x();
 	u(2) = odom_tf.getOrigin().y();
 	if(!(u(1) != u(1) || u(2) != u(2))){
 	  if(!path.compare("/dev/ttyGPS0")){
 	    if(gps0_ekf.isInitialized()){
-	      gps0_ekf.step(u,z);
+	      gps0_ekf.step(u,z); // correct
+	      //gps0_ekf.step(z,z); // incorrect
 	      x = gps0_ekf.getX();
 	      fout_kf_gps << path << " " << x(1) << " " << z(1) 
 			  << " " << x(2) << " " << z(2) << std::endl;
@@ -88,7 +89,8 @@ GpsProxy::update()
 	  }
 	  else if(!path.compare("/dev/ttyGPS1")){
 	    if(gps1_ekf.isInitialized()){
-	      gps1_ekf.step(u,z);
+	      gps1_ekf.step(u,z); // correct
+	      //gps1_ekf.step(z,z); // incorrect
 	      x = gps1_ekf.getX();
 	      fout_kf_gps << path << " " << x(1) << " " << z(1) 
 			  << " " << x(2) << " " << z(2) << std::endl;
