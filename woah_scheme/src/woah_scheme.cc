@@ -158,14 +158,12 @@ main(int argc, char* argv[])
     scm_c_eval_string("(load \"src/woah.scm\")");
     woah = scm_variable_ref(scm_c_lookup("woah"));
 
-    if (argc >= 2) {
-        char tmp[10];
-        printf("Press ENTER to continue...\n");
-        fgets(tmp, 10, stdin);
-    }
-
     ros::init(argc, argv, "woah_scm");
     ros::NodeHandle node;
+
+    char tmp[10];
+    printf("Press ENTER to continue...\n");
+    fgets(tmp, 10, stdin);
 
     ros::Publisher cv_ = node.advertise<Twist>("cmd_vel", 0);
     cmd_vel = &cv_;
