@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "geometry_msgs/Pose2D.h"
+#include "geometry_msgs/PoseStamped.h"
 #include "tf/transform_listener.h"
 #include "tf/transform_broadcaster.h"
 
@@ -8,8 +8,9 @@
 
 tf::TransformListener* tfListener;
 tf::TransformBroadcaster* tfBroadcaster;
+tf::Transform latestTransform;
 
-void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
+void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
 int main(int argc, char* argv[])
 {   
@@ -21,19 +22,24 @@ int main(int argc, char* argv[])
     tfListener = new tf::TransformListener();
     tfBroadcaster = new tf::TransformBroadcaster();
     
-    ros::spin();
+    ros::Rate rate(10);
+    
+    while (ros::ok())
+    {
+        ros::spinOnce();
+        
+        tfBroadcaster->sendTransform(tf::StampedTransform(latestTransform, ros::Time::now(), "/map", "/odom"));
+    }
 }
 
-void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
+void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
     tf::StampedTransform odomToBase, gpsToMap;
     
-    ros::Time now = ros::Time::now();
-    
     try
     {
-        tfListener->waitForTransform("/gps", "/map", now, ros::Duration(1.0));
-        tfListener->lookupTransform("/gps", "/map", now, gpsToMap);
+        tfListener->waitForTransform("/gps", "/map", msg->header.stamp, ros::Duration(1.0));
+        tfListener->lookupTransform("/gps", "/map", msg->header.stamp, gpsToMap);
     }
     catch (tf::TransformException ex)
     {
@@ -42,8 +48,8 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     
     try
     {
-        tfListener->waitForTransform("/odom", "/base_link", now, ros::Duration(1.0));
-        tfListener->lookupTransform("/odom", "/base_link", now, odomToBase);
+        tfListener->waitForTransform("/odom", "/base_link", msg->header.stamp, ros::Duration(1.0));
+        tfListener->lookupTransform("/odom", "/base_link", msg->header.stamp, odomToBase);
     }
     catch (tf::TransformException ex)
     {
@@ -63,16 +69,16 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     tfBroadcaster->sendTransform(tf::StampedTransform(OBTI * OBRI * MB, now, "/map", "/odom"));*/
     
     tf::Vector3 pos;
-    pos.setX(msg->x - gpsToMap.getOrigin().x());
-    pos.setY(msg->y - gpsToMap.getOrigin().y());
+    pos.setX(msg->pose.position.x - gpsToMap.getOrigin().x());
+    pos.setY(msg->pose.position.y - gpsToMap.getOrigin().y());
     
-    tf::Quaternion quat;
-    quat.setRPY(0, 0, msg->theta);
+    tf::Quaternion quat(msg->pose.orientation.x,
+                        msg->pose.orientation.y,
+                        msg->pose.orientation.z,
+                        msg->pose.orientation.w);
     
     quat = quat * odomToBase.getRotation().inverse();
     pos = pos - odomToBase.getOrigin();
     
-    tf::Transform mapToOdom(quat, pos);
-    
-    tfBroadcaster->sendTransform(tf::StampedTransform(mapToOdom, now, "/map", "/odom"));
+    latestTransform = tf::Transform(quat, pos);
 }
