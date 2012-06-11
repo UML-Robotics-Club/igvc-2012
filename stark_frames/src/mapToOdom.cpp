@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
     while (ros::ok())
     {
         ros::spinOnce();
+        rate.sleep();
         
         tfBroadcaster->sendTransform(tf::StampedTransform(latestTransform, ros::Time::now(), "/map", "/odom"));
     }
