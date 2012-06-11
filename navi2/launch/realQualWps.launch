@@ -8,7 +8,7 @@
 
         <node name="woah" pkg="woah_scheme" type="woah_scheme" output="screen" launch-prefix="xterm -e">
             <remap from="path" to="FilteredLocalPath"/>
-            <remap from="base_scan" to="base_scan"/>
+            <remap from="base_scan" to="woahLaser"/>
         </node>
     </group>
 </launch>

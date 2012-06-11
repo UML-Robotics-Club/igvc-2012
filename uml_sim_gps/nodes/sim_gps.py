@@ -4,9 +4,9 @@ import rospy
 
 CONFIG = {
     'UPDATE_DELAY': 0.0,
-    'BASE_LAT'    :  42.656516,
-    'BASE_LON'    : -71.323866,
-    'UTM_ZONE'    : '19T',
+    'BASE_LAT'    :  42.678555,
+    'BASE_LON'    : -83.195592,
+    'UTM_ZONE'    : '17',
     'SIM_ERROR'   : 1.0,
     'ERR_PERIOD'  : 120,
 }
@@ -23,7 +23,7 @@ from pyproj import Proj
 from time import time
 from math import cos
 
-conv = Proj(proj='utm',zone='19T',ellps='WGS84')
+conv = Proj(proj='utm',zone='17',ellps='WGS84')
 (base_utm_e, base_utm_n) = conv(CONFIG['BASE_LON'], CONFIG['BASE_LAT'])
 (base_xx, base_yy) = (100.0, 100.0)
 

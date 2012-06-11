@@ -5,8 +5,7 @@
 	      output="screen" respawn="true" />
         
         <node pkg="stark_frames" type="mapToOdom" name="MapToOdom" respawn="true">
-            <remap from="inputGPS" to="pose2d"/>
-            <remap from="inputCompass" to="orientation"/>
+            <remap from="input" to="pose2d"/>
         </node>
         
         <node pkg="stark_frames" type="odom_to_base_link.py" name="odom_to_base"

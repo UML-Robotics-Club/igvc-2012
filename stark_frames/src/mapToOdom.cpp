@@ -9,9 +9,7 @@
 
 tf::TransformListener* tfListener;
 tf::TransformBroadcaster* tfBroadcaster;
-tf::Transform newestTrans;
 
-void rotCallback(const geometry_msgs::QuaternionStamped::ConstPtr& msg);
 void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
 int main(int argc, char* argv[])
@@ -19,34 +17,17 @@ int main(int argc, char* argv[])
     ros::init(argc, argv, "mapToOdom");
     ros::NodeHandle nh;
     
-    ros::Subscriber compSub = nh.subscribe("inputCompass", 0, rotCallback);
-    ros::Subscriber poseSub = nh.subscribe("inputGPS", 0, poseCallback);
+    ros::Subscriber poseSub = nh.subscribe("input", 0, poseCallback);
     
     tfListener = new tf::TransformListener();
     tfBroadcaster = new tf::TransformBroadcaster();
     
-    ros::Rate rate(10);
-    
-    while (ros::ok())
-    {
-        rate.sleep();
-        ros::spinOnce();
-        tfBroadcaster->sendTransform(tf::StampedTransform(newestTrans, ros::Time::now(), "/map", "/odom"));
-    }
-}
-
-void rotCallback(const geometry_msgs::QuaternionStamped::ConstPtr& msg)
-{
-    newestTrans.setRotation(tf::Quaternion(msg->quaternion.x,
-                                           msg->quaternion.y,
-                                           msg->quaternion.z,
-                                           msg->quaternion.w));
-    newestTrans.setRotation(tf::Quaternion(0,0,0,1));
+    ros::spin();
 }
 
 void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
-    tf::StampedTransform odomToBase, gpsToMap;
+    tf::StampedTransform gpsToMap;
     
     ros::Time now = ros::Time::now();
     
@@ -60,26 +41,16 @@ void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
         ROS_ERROR("%s",ex.what());
     }
     
-    try
-    {
-        tfListener->waitForTransform("/odom", "/base_link", now, ros::Duration(1.0));
-        tfListener->lookupTransform("/odom", "/base_link", now, odomToBase);
-    }
-    catch (tf::TransformException ex)
-    {
-        ROS_ERROR("%s",ex.what());
-    }
-    
     tf::Vector3 pos;
     pos.setX(msg->pose.position.x - gpsToMap.getOrigin().x());
     pos.setY(msg->pose.position.y - gpsToMap.getOrigin().y());
-    
-    pos.setX(0);
-    pos.setY(0);
 
-    tf::Quaternion quat = newestTrans.getRotation();
+    tf::Quaternion quat(msg->pose.orientation.x,
+                        msg->pose.orientation.y,
+                        msg->pose.orientation.z,
+                        msg->pose.orientation.w);
     
     tf::Transform mapToOdom(quat, pos);
     
-    newestTrans = mapToOdom;
+    tfBroadcaster->sendTransform(tf::StampedTransform(mapToOdom, msg->header.stamp, "/map", "/odom"));
 }

@@ -22,10 +22,10 @@ void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg);
 int main(int argc, char* argv[])
 {
     pjLatLon = pj_init_plus("+proj=latlong +datum=WGS84");
-    pjUTM = pj_init_plus("+proj=utm +zone=19 +datum=WGS84");
+    pjUTM = pj_init_plus("+proj=utm +datum=WGS84 +zone=17");
     
-    baseX = -71.323866 / 180 * M_PI;
-    baseY = 42.656516  / 180 * M_PI;
+    baseX = -83.195592 / 180 * M_PI;
+    baseY = 42.678555  / 180 * M_PI;
     
     pj_transform(pjLatLon, pjUTM, 1, 1, &baseX, &baseY, NULL);
     
@@ -66,8 +66,9 @@ void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
     tf::Quaternion quat = lastQuat;
     double y = msg->latitude  / 180.0 * M_PI;
     double x = msg->longitude / 180.0 * M_PI;
+    double zero = 0.0;
     
-    pj_transform(pjLatLon, pjUTM, 1, 1, &x, &y, NULL);
+    pj_transform(pjLatLon, pjUTM, 1, 0, &x, &y, &zero);
     
     pos.setX(x - baseX);
     pos.setY(y - baseY);

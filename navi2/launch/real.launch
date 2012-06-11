@@ -19,14 +19,14 @@
         </node>
         
         <node name="navi2" pkg="navi2" type="navi2">
-            <remap from="inputMap" to="laserMap"/>
+            <remap from="inputMap" to="mergedMap"/>
             <remap from="inputGoal" to="goal"/>
             <remap from="output" to="localPath"/>
             <rosparam command="load" file="$(find navi2)/navi2.yaml"/>
         </node>
         
         <node name="LaserMapNoInflation" pkg="navi2" type="laserMapper">
-            <remap from="input" to="base_scan"/>
+            <remap from="input" to="cam_laser"/>
             <remap from="output" to="laserMapNoInflation"/>
             <rosparam command="load" file="$(find navi2)/noInflationMap.yaml"/>
         </node>
