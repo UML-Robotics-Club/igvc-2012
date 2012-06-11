@@ -6,8 +6,8 @@ using std::endl;
 
 #include "ros/ros.h"
 #include "geometry_msgs/QuaternionStamped.h"
-#include "geometry_msgs/Pose2D.h"
-using geometry_msgs::Pose2D;
+#include "geometry_msgs/PoseStamped.h"
+using geometry_msgs::PoseStamped;
 
 #include "sensor_msgs/NavSatFix.h"
 using sensor_msgs::NavSatFix;
@@ -32,7 +32,7 @@ void
 stark_pose_node()
 {
     ros::NodeHandle node;
-    ros::Publisher pos_topic = node.advertise<Pose2D>("pose2d", 5);
+    ros::Publisher pos_topic = node.advertise<PoseStamped>("pose2d", 5);
     ros::Publisher gps_topic = node.advertise<NavSatFix>("gps", 5);
     ros::Rate loop_rate(10);
 
@@ -45,11 +45,19 @@ stark_pose_node()
         gps.update();
         gps_pos_t gps_pos = gps.position();
 
-        Pose2D pose;
-        pose.x = gps_pos.utm_e;
-        pose.y = gps_pos.utm_n;
-        pose.theta = heading;
+        PoseStamped pose;
+	pose.header.stamp = ros::Time::now();
+        pose.pose.position.x = gps_pos.utm_e;
+        pose.pose.position.y = gps_pos.utm_n;
+	pose.pose.position.z = 0;
+	
+	tf::Quaternion tf_quat;
+	tf_quat.setRPY(0,0,heading);
 
+        pose.pose.orientation.x = tf_quat.getX();
+	pose.pose.orientation.y = tf_quat.getY();
+	pose.pose.orientation.z = tf_quat.getZ();
+	pose.pose.orientation.w = tf_quat.getW();
         pos_topic.publish(pose);
 
         NavSatFix gps;

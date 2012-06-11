@@ -17,7 +17,7 @@ void test(std::string dev) {
     printf("Left: %d Right: %d\n", left_count, right_count);
     
     for(;;){
-      mc.set_power(0.0, 0.025);
+      mc.set_power(0.0, 0.5);
       fsleep(0.5);
     }
     //left_count = mc.get_left_ticks(); 

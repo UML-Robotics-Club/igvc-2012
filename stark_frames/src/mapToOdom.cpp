@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "geometry_msgs/Pose2D.h"
+#include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/QuaternionStamped.h"
 #include "tf/transform_listener.h"
 #include "tf/transform_broadcaster.h"
@@ -12,7 +12,7 @@ tf::TransformBroadcaster* tfBroadcaster;
 tf::Transform newestTrans;
 
 void rotCallback(const geometry_msgs::QuaternionStamped::ConstPtr& msg);
-void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
+void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
 int main(int argc, char* argv[])
 {   
@@ -41,9 +41,10 @@ void rotCallback(const geometry_msgs::QuaternionStamped::ConstPtr& msg)
                                            msg->quaternion.y,
                                            msg->quaternion.z,
                                            msg->quaternion.w));
+    newestTrans.setRotation(tf::Quaternion(0,0,0,1));
 }
 
-void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
+void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
     tf::StampedTransform odomToBase, gpsToMap;
     
@@ -70,9 +71,12 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     }
     
     tf::Vector3 pos;
-    pos.setX(msg->x - gpsToMap.getOrigin().x());
-    pos.setY(msg->y - gpsToMap.getOrigin().y());
+    pos.setX(msg->pose.position.x - gpsToMap.getOrigin().x());
+    pos.setY(msg->pose.position.y - gpsToMap.getOrigin().y());
     
+    pos.setX(0);
+    pos.setY(0);
+
     tf::Quaternion quat = newestTrans.getRotation();
     
     tf::Transform mapToOdom(quat, pos);
