@@ -18,7 +18,7 @@ from tf.transformations import quaternion_from_euler
 AXLE_LENGTH = 0.58 # actual 0.64
 WHEEL_RADIUS = 0.127 # 9.5in diameter wheels
 WHEEL_CIRC = 2.0 * math.pi * WHEEL_RADIUS
-TWO_PI_TICKS = 98917 # actual ~62127
+TWO_PI_TICKS = 98917 # actual ~62127 (i think)
 
 signal.signal(signal.SIGINT, lambda signum, stack_frame: exit(0))
 rospy.init_node("odom")
@@ -26,27 +26,31 @@ br = tf.TransformBroadcaster()
 listener = tf.TransformListener()
 
 prev_time_stamp = rospy.Time.now()
-reset_model = True
+gps_stamp = prev_time_stamp
+reset_model = False
 x_pos = 0
 y_pos = 0
 theta = math.pi/2.0 
 
 def handle_gps_msg(msg):
-    global reset_model
-    reset_model = False #True set to true if you want to reset 
+    global reset_model, gps_stamp
+    gps_stamp = msg.header.stamp
+    reset_model = False #set to true if you want to reset 
 
 def handle_encoder_msg(msg):
     global prev_time_stamp
     global WHEEL_CIRC, TWO_PI_TICKS
     global br
-    global reset_model
+    global reset_model, gps_stamp
     global x_pos, y_pos, theta
     
-    if(reset_model):
-        reset_model = False
+    timestamp = msg.header.stamp
+    if reset_model:
         x_pos = 0.0
         y_pos = 0.0
         theta = math.pi/2.0
+        timestamp = gps_stamp
+        reset_model = False
     
     dt = (msg.header.stamp - prev_time_stamp).to_sec()
     left_meas_vel = msg.left_ticks * WHEEL_CIRC / TWO_PI_TICKS / dt
@@ -56,7 +60,7 @@ def handle_encoder_msg(msg):
     pos = (y_pos, -x_pos, 0)
     (qx, qy, qz, qw) = quaternion_from_euler(0,0,theta-math.pi/2.0)
     orientation = (qx, qy, qz, qw)
-    br.sendTransform(pos, orientation, rospy.Time.now(), "/base_link", "/odom")
+    br.sendTransform(pos, orientation, timestamp, "/base_link", "/odom")
     prev_time_stamp = msg.header.stamp
 
 # Forward kinematics for differential drive robots

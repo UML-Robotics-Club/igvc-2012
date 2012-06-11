@@ -1,2 +1,11 @@
 digraph G {
-"no tf data recieved"}
+"/base_link" -> "/laser_link"[label="Broadcaster: /robot/laser_frame\nAverage rate: 10.195 Hz\nMost recent transform: -0.064 sec old \nBuffer length: 4.905 sec\n"];
+"/odom" -> "/base_link"[label="Broadcaster: /robot/odom_to_base\nAverage rate: 10.208 Hz\nMost recent transform: 0.080 sec old \nBuffer length: 4.800 sec\n"];
+"/base_link" -> "/vision_laser_link"[label="Broadcaster: /robot/vision_laser_frame\nAverage rate: 10.195 Hz\nMost recent transform: -0.064 sec old \nBuffer length: 4.904 sec\n"];
+"/gps" -> "/map"[label="Broadcaster: /robot/gps_to_map\nAverage rate: 10.204 Hz\nMost recent transform: 0.024 sec old \nBuffer length: 4.900 sec\n"];
+"/map" -> "/odom"[label="Broadcaster: /robot/MapToOdom\nAverage rate: 10.204 Hz\nMost recent transform: 0.012 sec old \nBuffer length: 4.900 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1339419764.692"[ shape=plaintext ] ;
+ }->"/gps";
+}

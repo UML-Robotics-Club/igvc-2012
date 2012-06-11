@@ -6,6 +6,7 @@
 #include <libgpsmm.h>
 #include "robot_ekf.hpp"
 #include <tf/transform_listener.h>
+#include "ros/ros.h"
 
 // GpsProxy connects to a gpsd handling multiple GPS
 // devices and combines all the data into one position

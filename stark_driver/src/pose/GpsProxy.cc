@@ -47,10 +47,14 @@ GpsProxy::~GpsProxy()
 void
 GpsProxy::update()
 {
+    static ros::Time last_gps0 = ros::Time::now();
+    static ros::Time last_gps1 = ros::Time::now();
+
     struct gps_data_t* msg;
     RobotEKF::Vector u(3);
     RobotEKF::Vector z(3);
     RobotEKF::Vector x(3);
+    RobotEKF* ekf = NULL;
 
     u(3) = 0; // no compass
     z(3) = 0;
@@ -58,51 +62,143 @@ GpsProxy::update()
     z(1) = utm_east(msg->fix.latitude, msg->fix.longitude); 
     z(2) = utm_north(msg->fix.latitude, msg->fix.longitude);
     std::string path(msg->dev.path);
+    if(!path.compare("/dev/ttyGPS0"))
+      ekf = &gps0_ekf;
+    else if(!path.compare("/dev/ttyGPS1"))
+      ekf = &gps1_ekf;
     fout_gps << path << " " << z(1) << " " << z(1) << endl;
-    if(!(z(1) != z(1) || z(2) != z(2))){ // test for nan (will not work with fastmath enabled)
+    if(ekf != NULL && !(z(1) != z(1) || z(2) != z(2))){ // test for nan (will not work with fastmath enabled)
+      ros::Time new_time = ros::Time::now();
+      ros::Duration dt;
       tf::StampedTransform odom_tf;
+
       try{
-	tf_listener.lookupTransform("/odom", "/base_link", 
-				    ros::Time(0), odom_tf);
-	u(1) = odom_tf.getOrigin().x();
-	u(2) = odom_tf.getOrigin().y();
-	if(!(u(1) != u(1) || u(2) != u(2))){
-	  if(!path.compare("/dev/ttyGPS0")){
+	if(ekf == &gps0_ekf){
+	  if((new_time - ros::Duration(3.0)) > last_gps0)
+	    last_gps0 = new_time - ros::Duration(3.0);
+	  
+	  tf_listener.waitForTransform("/base_link", last_gps0,
+				       "/base_link", new_time,
+				       "/odom", ros::Duration(1.0));
+	  tf_listener.lookupTransform("/base_link", last_gps0,
+				      "/base_link", new_time,
+				      "/odom", odom_tf);
+	  dt = new_time - last_gps0;
+	  last_gps0 = new_time;	
+	}
+	else{
+	  if((new_time - ros::Duration(3.0)) > last_gps1)
+	    last_gps1 = new_time - ros::Duration(3.0);
+	  
+	  tf_listener.waitForTransform("/base_link", last_gps1,
+				       "/base_link", new_time,
+				       "/odom", ros::Duration(1.0));
+	  tf_listener.lookupTransform("/base_link", last_gps1,
+				      "/base_link", new_time,
+				      "/odom", odom_tf);
+	  dt = new_time - last_gps1;
+	  last_gps1 = new_time;
+	}
+      }
+      catch (tf::TransformException ex){
+	ROS_ERROR("%s",ex.what());
+      }
+      
+      u(1) = odom_tf.getOrigin().x();
+      u(2) = odom_tf.getOrigin().y();
+      if(!(u(1) != u(1) || u(2) != u(2))){
+	if(ekf->isInitialized()){
+	  ekf->step(u,z);
+	  x = ekf->getX();
+	  fout_kf_gps << path << " " << x(1) << " " << z(1) 
+		      << " " << x(2) << " " << z(2) << std::endl;
+	}
+	else
+	  ekf->InitVals(z(1), z(2), z(3), u(1), u(2), u(3));
+	fout_encoder_pos << dt.toSec() << " " << u(1) << " " 
+			 << u(2) << std::endl;
+      }
+
+      /*
+
+      try{
+	if(!path.compare("/dev/ttyGPS0")){
+	  
+	  // New gps0 data.
+	  ros::Time new_time = ros::Time::now();
+	  if((new_time - ros::Duration(3.0)) > last_gps0)
+	    last_gps0 = new_time - ros::Duration(3.0);
+	  
+	  tf_listener.waitForTransform("/base_link", last_gps0,
+				       "/base_link", new_time,
+				       "/odom", ros::Duration(1.0));
+	  tf_listener.lookupTransform("/base_link", last_gps0,
+				      "/base_link", new_time,
+				      "/odom", odom_tf);
+	  last_gps0 = new_time;				       
+	  
+	  u(1) = odom_tf.getOrigin().x();
+	  u(2) = odom_tf.getOrigin().y();
+	  if(!(u(1) != u(1) || u(2) != u(2))){
 	    if(gps0_ekf.isInitialized()){
 	      gps0_ekf.step(u,z); // correct
 	      //gps0_ekf.step(z,z); // incorrect
 	      x = gps0_ekf.getX();
 	      fout_kf_gps << path << " " << x(1) << " " << z(1) 
 			  << " " << x(2) << " " << z(2) << std::endl;
-	      encoder_x_pos += u(1);
+	      encoder_x_pos += u(1); // fubar
 	      encoder_y_pos += u(2);
-	      fout_encoder_pos << encoder_x_pos << " " 
-			       << encoder_y_pos << std::endl;
+	      fout_encoder_pos << u(1) << " " 
+			       << u(2) << std::endl;
 	    }
 	    else{
 	      gps0_ekf.InitVals(z(1), z(2), z(3), u(1), u(2), u(3));
 	      encoder_x_pos = z(1);
 	      encoder_y_pos = z(2);
-	      fout_encoder_pos << encoder_x_pos << " " 
-			       << encoder_y_pos << std::endl;
+	      fout_encoder_pos << u(1) << " " 
+			       << u(2) << std::endl;
 	    }
 	  }
 	  else if(!path.compare("/dev/ttyGPS1")){
-	    if(gps1_ekf.isInitialized()){
-	      gps1_ekf.step(u,z); // correct
-	      //gps1_ekf.step(z,z); // incorrect
-	      x = gps1_ekf.getX();
-	      fout_kf_gps << path << " " << x(1) << " " << z(1) 
-			  << " " << x(2) << " " << z(2) << std::endl;
+	    
+	    // new GPS1 data
+	    ros::Time new_time = ros::Time::now();
+	    if((new_time - ros::Duration(3.0)) > last_gps1)
+	      last_gps1 = new_time - ros::Duration(3.0);
+	    
+	    tf_listener.waitForTransform("/base_link", last_gps1,
+					 "/base_link", new_time,
+					 "/odom", ros::Duration(1.0));
+	    tf_listener.lookupTransform("/base_link", last_gps1,
+					 "/base_link", new_time,
+					"/odom", odom_tf);
+	    last_gps1 = new_time;
+	    
+	    u(1) = odom_tf.getOrigin().x();
+	    u(2) = odom_tf.getOrigin().y();
+	    if(!(u(1) != u(1) || u(2) != u(2))){
+	      if(gps1_ekf.isInitialized()){
+		gps1_ekf.step(u,z); // correct
+		//gps1_ekf.step(z,z); // incorrect
+		x = gps1_ekf.getX();
+		fout_kf_gps << path << " " << x(1) << " " << z(1) 
+			    << " " << x(2) << " " << z(2) << std::endl;
+		if(gps0_ekf.isInitialized()){
+		  encoder_x_pos += u(1); // fubar
+		  encoder_y_pos += u(2);
+		  fout_encoder_pos << u(1) << " " 
+				   << u(2) << std::endl;
+		}
+	      }
+	      else
+		gps1_ekf.InitVals(z(1), z(2), z(3), u(1), u(2), u(3));
 	    }
-	    else
-	      gps1_ekf.InitVals(z(1), z(2), z(3), u(1), u(2), u(3));
 	  }
 	}
       }
       catch (tf::TransformException ex){
 	ROS_ERROR("%s",ex.what());
-      }
+	}*/
     }
 #if 0
     cout << "Polled dev: " << path
