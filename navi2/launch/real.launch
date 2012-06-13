@@ -10,7 +10,7 @@
         <node name="VisionMap" pkg="navi2" type="laserMapper">
             <remap from="input" to="cam_laser"/>
             <remap from="output" to="laserMap2"/>
-            <rosparam command="load" file="$(find navi2)/laserMap.yaml"/>
+            <rosparam command="load" file="$(find navi2)/visionMap.yaml"/>
         </node>
         
         <node name="MapMerger" pkg="navi2" type="mapMerger">

@@ -7,6 +7,7 @@
 #include "robot_ekf.hpp"
 #include <tf/transform_listener.h>
 #include "ros/ros.h"
+#include "geometry_msgs/PoseStamped.h"
 
 // GpsProxy connects to a gpsd handling multiple GPS
 // devices and combines all the data into one position
@@ -36,6 +37,8 @@ class GpsProxy {
     RobotEKF gps0_ekf;
     RobotEKF gps1_ekf;
     tf::TransformListener tf_listener;
+    tf::StampedTransform gps0_last_tf, gps1_last_tf;
+    geometry_msgs::PoseStamped gps0_prev_enc_msg, gps1_prev_enc_msg;
     double encoder_x_pos, encoder_y_pos; // for testing control data
 };
 
